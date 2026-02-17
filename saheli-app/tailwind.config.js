@@ -1,0 +1,41 @@
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: ["./app/**/*.{js,jsx,ts,tsx}", "./components/**/*.{js,jsx,ts,tsx}"],
+  presets: [require("nativewind/preset")],
+  theme: {
+    extend: {
+      colors: {
+        primary: "#f471b5",
+        "primary-10": "rgba(244, 113, 181, 0.1)",
+        "primary-20": "rgba(244, 113, 181, 0.2)",
+        "primary-30": "rgba(244, 113, 181, 0.3)",
+        "primary-50": "rgba(244, 113, 181, 0.5)",
+        "primary-70": "rgba(244, 113, 181, 0.7)",
+        "primary-5": "rgba(244, 113, 181, 0.05)",
+        secondary: "#7ed3d4",
+        "secondary-10": "rgba(126, 211, 212, 0.1)",
+        "secondary-5": "rgba(126, 211, 212, 0.05)",
+        "bg-light": "#f8f6f7",
+        "bg-dark": "#221019",
+        "amber-soft": "#f59e0b",
+        "white-10": "rgba(255,255,255,0.1)",
+        "white-20": "rgba(255,255,255,0.2)",
+        "white-30": "rgba(255,255,255,0.3)",
+        "white-50": "rgba(255,255,255,0.5)",
+        "white-60": "rgba(255,255,255,0.6)",
+        "white-80": "rgba(255,255,255,0.8)",
+        "white-90": "rgba(255,255,255,0.9)",
+        "white-95": "rgba(255,255,255,0.95)",
+        "black-20": "rgba(0,0,0,0.2)",
+        "black-30": "rgba(0,0,0,0.3)",
+        "black-50": "rgba(0,0,0,0.5)",
+        "black-60": "rgba(0,0,0,0.6)",
+        "bg-light-90": "rgba(248,246,247,0.9)",
+      },
+      fontFamily: {
+        display: ["Lexend"],
+      },
+    },
+  },
+  plugins: [],
+};

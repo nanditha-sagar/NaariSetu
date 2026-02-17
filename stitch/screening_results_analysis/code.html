@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Screening Results Analysis</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#f471b5",
+                        "background-light": "#f8f6f7",
+                        "background-dark": "#221019",
+                        "amber-soft": "#f59e0b",
+                        "neutral-soft": "#7d6a74",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Lexend', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .status-bar-height { height: 44px; }
+        .bottom-indicator { height: 34px; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-neutral-soft dark:text-pink-100/80 min-h-screen flex justify-center">
+<!-- iOS Frame Emulation (Phone form factor) -->
+<div class="w-full max-w-[402px] bg-white dark:bg-[#2d1622] min-h-screen shadow-2xl relative overflow-hidden flex flex-col">
+<!-- Status Bar Space -->
+<div class="status-bar-height w-full flex justify-between items-center px-8 pt-4">
+<span class="text-xs font-bold">9:41</span>
+<div class="flex gap-1.5 items-center">
+<span class="material-icons-round text-[14px]">signal_cellular_alt</span>
+<span class="material-icons-round text-[14px]">wifi</span>
+<span class="material-icons-round text-[14px]">battery_full</span>
+</div>
+</div>
+<!-- Navigation -->
+<nav class="px-6 py-4 flex items-center justify-between">
+<button class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-icons-round">chevron_left</span>
+</button>
+<h1 class="text-sm font-semibold text-neutral-800 dark:text-white uppercase tracking-widest">Analysis Result</h1>
+<button class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-icons-round">share</span>
+</button>
+</nav>
+<!-- Main Content Scroll Area -->
+<main class="flex-1 overflow-y-auto px-6 pb-24">
+<!-- Result Header Card -->
+<div class="mt-4 bg-primary/5 dark:bg-primary/10 rounded-xl p-6 text-center border border-primary/10">
+<div class="mb-4 inline-flex items-center justify-center w-16 h-16 bg-white dark:bg-background-dark rounded-full shadow-sm">
+<span class="material-icons-round text-3xl text-primary">analytics</span>
+</div>
+<h2 class="text-2xl font-bold text-neutral-800 dark:text-white mb-2 leading-tight">Potential Iron Deficiency</h2>
+<div class="flex justify-center mt-3">
+<span class="inline-flex items-center gap-1.5 px-4 py-1.5 bg-amber-soft/10 text-amber-soft rounded-full text-xs font-semibold border border-amber-soft/20">
+<span class="w-2 h-2 rounded-full bg-amber-soft animate-pulse"></span>
+                        Medium Risk
+                    </span>
+</div>
+</div>
+<!-- Insights Section -->
+<div class="mt-8">
+<h3 class="text-xs font-bold uppercase tracking-widest text-primary mb-4">AI Analysis Confidence</h3>
+<div class="bg-white dark:bg-white/5 p-5 rounded-xl border border-primary/5 shadow-sm">
+<div class="flex justify-between items-end mb-2">
+<span class="text-sm font-medium">Confidence Score</span>
+<span class="text-2xl font-bold text-primary">78%</span>
+</div>
+<div class="w-full h-2.5 bg-primary/10 rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full w-[78%]"></div>
+</div>
+<p class="mt-4 text-sm leading-relaxed opacity-80">
+                        Based on the visible paleness in your nail beds and your reported symptoms of persistent fatigue, our AI has identified patterns consistent with low iron levels.
+                    </p>
+</div>
+</div>
+<!-- Recommended Next Steps -->
+<div class="mt-8">
+<h3 class="text-xs font-bold uppercase tracking-widest text-primary mb-4">Recommended Next Steps</h3>
+<div class="space-y-3">
+<!-- Step 1 -->
+<div class="flex items-start gap-4 p-4 bg-white dark:bg-white/5 rounded-xl border border-primary/5 shadow-sm">
+<div class="w-10 h-10 shrink-0 bg-primary/10 rounded-lg flex items-center justify-center">
+<span class="material-icons-round text-primary">biotech</span>
+</div>
+<div>
+<h4 class="text-sm font-semibold text-neutral-800 dark:text-white">Blood Test (CBC)</h4>
+<p class="text-xs mt-1 leading-normal opacity-70">A complete blood count will confirm hemoglobin and ferritin levels.</p>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="flex items-start gap-4 p-4 bg-white dark:bg-white/5 rounded-xl border border-primary/5 shadow-sm">
+<div class="w-10 h-10 shrink-0 bg-primary/10 rounded-lg flex items-center justify-center">
+<span class="material-icons-round text-primary">medical_services</span>
+</div>
+<div>
+<h4 class="text-sm font-semibold text-neutral-800 dark:text-white">Consult Physician</h4>
+<p class="text-xs mt-1 leading-normal opacity-70">Discuss these results with your GP to develop a personalized care plan.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Supporting Imagery -->
+<div class="mt-8 rounded-xl overflow-hidden h-32 relative">
+<img alt="Abstract supportive medical background" class="w-full h-full object-cover opacity-50 dark:opacity-20" data-alt="Soft pink and white abstract gradient pattern" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDiD7yvMthAeGhWGtPU1r2XQT5hhrWBSUql5uW0Kw-IQtVJ7xFjM_aR3Gk2SkidnPs_Imo333ysKc9eYvXi6SDDS2_v8GmHvqkCGC3bs_4jIjl45z1enDN9GhBu9OA57lLRowbCx7aqffiGw_g6Lb1yPrV1-mg5p9v91YIwc3tO2tRV49F8YTutw9hXNNQQGVIOIC3hJCk36kisN0UdYYJr7i-ubrI_vpakPKQZrTa-ImTdffjPPAyg8VR56wHSV-O2tVU7y455wx2w"/>
+<div class="absolute inset-0 bg-gradient-to-t from-white dark:from-[#2d1622] to-transparent"></div>
+<div class="absolute bottom-4 left-4 right-4">
+<p class="text-xs font-medium italic text-neutral-700 dark:text-pink-200">"Prioritizing your health is a beautiful act of self-care."</p>
+</div>
+</div>
+<!-- Disclaimer -->
+<div class="mt-10 mb-6 p-4 bg-neutral-100 dark:bg-black/20 rounded-lg border-l-4 border-primary/30">
+<div class="flex gap-3">
+<span class="material-icons-round text-primary text-lg">info</span>
+<p class="text-[11px] leading-relaxed opacity-70 italic">
+                        This is not a medical diagnosis. Our AI provides insights to help you start a conversation with your doctor. Please consult a healthcare professional before making any medical decisions.
+                    </p>
+</div>
+</div>
+</main>
+<!-- Fixed Footer Actions -->
+<div class="px-6 py-4 bg-white/80 dark:bg-[#2d1622]/80 backdrop-blur-md border-t border-primary/5">
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-4 rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-[0.98]">
+                Schedule Professional Review
+            </button>
+<div class="bottom-indicator w-full flex justify-center items-end pb-2">
+<div class="w-32 h-1.5 bg-neutral-200 dark:bg-white/10 rounded-full"></div>
+</div>
+</div>
+</div>
+</body></html>

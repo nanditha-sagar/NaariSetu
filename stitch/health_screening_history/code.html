@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Health Screening History</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#f471b5",
+                        "background-light": "#f8f6f7",
+                        "background-dark": "#221019",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-100 antialiased min-h-screen">
+<div class="max-w-md mx-auto min-h-screen flex flex-col relative pb-24">
+<!-- Header Section -->
+<header class="sticky top-0 z-10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md px-6 pt-12 pb-4">
+<div class="flex items-center justify-between mb-4">
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-primary/10 shadow-sm border border-primary/10">
+<span class="material-icons-outlined text-primary">arrow_back_ios_new</span>
+</button>
+<div class="flex gap-3">
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-primary/10 shadow-sm border border-primary/10">
+<span class="material-icons-outlined text-primary">filter_list</span>
+</button>
+</div>
+</div>
+<h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Screening History</h1>
+<p class="text-slate-500 dark:text-slate-400 mt-1">Track your health trends over time</p>
+</header>
+<!-- Sorting Info -->
+<div class="px-6 py-2 flex items-center justify-between text-sm">
+<span class="text-slate-400 font-medium">Sorted by <span class="text-primary">Latest</span></span>
+<span class="text-slate-400">12 Screenings</span>
+</div>
+<!-- History List -->
+<main class="flex-grow px-6 space-y-4 pt-2">
+<!-- Entry 1: Low Risk -->
+<div class="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-primary/5 active:scale-[0.98] transition-transform">
+<div class="flex gap-4">
+<div class="relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-slate-100">
+<img alt="Nail scan preview" class="w-full h-full object-cover" data-alt="Close up photo of clean healthy fingernails" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDSir-APr8pKKFkrh_EHR7ERqfoT3137hZkdDQjUcFbHmHUb-Z6-JmpLc5U_tCAtzac1qCC8bx021rlrnUMfWsAb0jdgANNj_DCv6qniKuE47IIP3N618yjqxBjd-gillJ8zg6Plxp_aTAnc9oxTv7NGuQtXKUsmMnTuKV-bGyjyrlKdXAaWOjtrNJutSt_3_taDeHWB-CpZtsMbqqsAI-Ar_Xikbc7-Ed_XphtDehvTQY1D7pcSsFb50miu96owvsSwglxMfGLwbwj"/>
+</div>
+<div class="flex flex-col justify-between flex-grow">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-[16px] font-semibold text-slate-900 dark:text-white leading-tight">Nail Analysis</p>
+<p class="text-sm text-slate-500 mt-1">Today, 10:24 AM</p>
+</div>
+<span class="material-icons-outlined text-slate-300">chevron_right</span>
+</div>
+<div class="flex items-center mt-2">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+<span class="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5"></span>
+                                Low Risk
+                            </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Entry 2: Medium Risk -->
+<div class="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-primary/5 active:scale-[0.98] transition-transform">
+<div class="flex gap-4">
+<div class="relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-slate-100">
+<img alt="Nail scan preview" class="w-full h-full object-cover" data-alt="Detailed macro view of fingernail surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBx-GYscned6KSRqQS3lPgRzGH89RKYytv3pAlIG3Acf4hoDENAG9aa1f9nBipHYwRnE3O3WbdaXwg4R0FaxsIBEhRn9kUu6FQVYSh2UIiUat9EC0vIlD9fAP0jZyt3CRcBVBOtfsHal2znynv3Ib-JSX4FYV5c_4Epo39u0lcFHsfVewEAI9fFOVyFQ6N23-br04xXKuyoAd2NC39STwPNO0FuUmVgmZy2dPBVZ_ZHWznhiMwsT5bEJxRW--9oJ5NBQNxro5Y5zjd"/>
+</div>
+<div class="flex flex-col justify-between flex-grow">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-[16px] font-semibold text-slate-900 dark:text-white leading-tight">Symptom Track</p>
+<p class="text-sm text-slate-500 mt-1">Oct 24, 2023</p>
+</div>
+<span class="material-icons-outlined text-slate-300">chevron_right</span>
+</div>
+<div class="flex items-center mt-2">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span>
+                                Medium Risk
+                            </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Entry 3: Low Risk -->
+<div class="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-primary/5 active:scale-[0.98] transition-transform">
+<div class="flex gap-4">
+<div class="relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-slate-100">
+<img alt="Nail scan preview" class="w-full h-full object-cover" data-alt="Person showing their clean manicured nails" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMi7WIrru-SLS_arLKpbhuy6u3eatrU-iPNRKlvBOiCVjZprkmnxJLsLdrBTbhsUGmNPj60smAiQ0U4mGxYzTPbXQ-4s-KOM2POyRD_cWdx_o2HqMeHcqY7Fo3RAuzaaSruDTgwDOd3eWWTHQnKbQGInL7YuQnh_BefhXJfHN-Z1-zFzOIV-dPLFPKeHPtdQDu5zen6In1tZk3wE6unWI9ojSrY-7jycZY9PFQYSTBWhiU3GGPV3ExIpLToTHVZwjm7HCR82-TBGs3"/>
+</div>
+<div class="flex flex-col justify-between flex-grow">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-[16px] font-semibold text-slate-900 dark:text-white leading-tight">Nail Analysis</p>
+<p class="text-sm text-slate-500 mt-1">Oct 18, 2023</p>
+</div>
+<span class="material-icons-outlined text-slate-300">chevron_right</span>
+</div>
+<div class="flex items-center mt-2">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+<span class="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5"></span>
+                                Low Risk
+                            </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Entry 4: Low Risk -->
+<div class="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-primary/5 active:scale-[0.98] transition-transform">
+<div class="flex gap-4">
+<div class="relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-slate-100">
+<img alt="Nail scan preview" class="w-full h-full object-cover" data-alt="Natural sunlight hitting healthy fingernails" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBD2KWcA13NtC1GgUtfWs10kCa8pxYcioy6vE_duklBUPHUmp6kIIhO0ClGOrfA6sX2iHOdCtr5zFCJeD2mO3F6JtaEfwFDYPmLCW8UvoRQZBM41uh0QNkByDHucxJi3liO3YoOGbrV3vKIUx2tu1L-ygh74HoFQOz2r6EUk6fm3vevX8J56ePPNPEpFC32cs334-xR0axd8Utsa3Mv60qMmWbStmzODW8JOEChMVt7BwAUdE_5qo-bXvOLbE3-aDEj3K66Atq__s4D"/>
+</div>
+<div class="flex flex-col justify-between flex-grow">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-[16px] font-semibold text-slate-900 dark:text-white leading-tight">Nail Analysis</p>
+<p class="text-sm text-slate-500 mt-1">Oct 12, 2023</p>
+</div>
+<span class="material-icons-outlined text-slate-300">chevron_right</span>
+</div>
+<div class="flex items-center mt-2">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+<span class="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5"></span>
+                                Low Risk
+                            </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Empty State Case (Hidden by default but coded for logic) -->
+<div class="hidden flex flex-col items-center justify-center py-20 px-10 text-center">
+<div class="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+<span class="material-icons-outlined text-4xl text-primary">history_toggle_off</span>
+</div>
+<h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">No screenings yet</h3>
+<p class="text-slate-500 dark:text-slate-400 mb-8">Start a screening to monitor your health trends with AI-powered analysis.</p>
+<button class="bg-primary text-white font-semibold py-3 px-8 rounded-full shadow-lg shadow-primary/30 active:scale-95 transition-all">
+                    Start First Scan
+                </button>
+</div>
+</main>
+<!-- Floating Action Button for Scan -->
+<div class="fixed bottom-24 right-6">
+<button class="w-14 h-14 bg-primary text-white rounded-full shadow-xl flex items-center justify-center active:scale-90 transition-transform">
+<span class="material-icons-outlined text-3xl">add_a_photo</span>
+</button>
+</div>
+<!-- iOS Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-t border-slate-100 dark:border-white/5 px-8 pb-8 pt-3 flex justify-between max-w-md mx-auto">
+<div class="flex flex-col items-center gap-1 group">
+<span class="material-icons-outlined text-slate-400 group-hover:text-primary transition-colors">home</span>
+<span class="text-[10px] font-medium text-slate-400 group-hover:text-primary">Home</span>
+</div>
+<div class="flex flex-col items-center gap-1 group">
+<span class="material-icons-outlined text-primary">history</span>
+<span class="text-[10px] font-medium text-primary">History</span>
+</div>
+<div class="flex flex-col items-center gap-1 group">
+<span class="material-icons-outlined text-slate-400 group-hover:text-primary transition-colors">insights</span>
+<span class="text-[10px] font-medium text-slate-400 group-hover:text-primary">Trends</span>
+</div>
+<div class="flex flex-col items-center gap-1 group">
+<span class="material-icons-outlined text-slate-400 group-hover:text-primary transition-colors">person</span>
+<span class="text-[10px] font-medium text-slate-400 group-hover:text-primary">Profile</span>
+</div>
+</nav>
+</div>
+</body></html>

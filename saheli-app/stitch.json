@@ -1,0 +1,10 @@
+{
+  "projectId": "11176472057338095600",
+  "title": "NaariSetu — Women's Health Screening App",
+  "screens": {
+    "home": "f728759f9c5b4ffeb098a70837377334",
+    "questionnaire": "b24633b5ab8b4f8597a50168b850eecd",
+    "results": "86b21a9e118c4ff2bba00a139f7cb17d",
+    "scan": "443c5b4914964430bf46aeafa07a8b55"
+  }
+}
