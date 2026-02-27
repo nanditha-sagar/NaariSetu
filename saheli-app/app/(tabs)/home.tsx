@@ -15,6 +15,42 @@ import {
 
 const TRACKERS = [
   {
+    id: "period",
+    label: "Period",
+    emoji: "🩸",
+    color: "#ec4899",
+    bg: "rgba(236,72,153,0.12)",
+    route: "/tracker/period",
+    active: true,
+  },
+  {
+    id: "mood",
+    label: "Mood",
+    emoji: "😊",
+    color: "#f59e0b",
+    bg: "rgba(245,158,11,0.12)",
+    route: "/tracker/mood",
+    active: true,
+  },
+  {
+    id: "skin",
+    label: "Skin",
+    emoji: "✨",
+    color: "#8b5cf6",
+    bg: "rgba(139,92,246,0.12)",
+    route: "/tracker/skin",
+    active: true,
+  },
+  {
+    id: "cravings",
+    label: "Cravings",
+    emoji: "🍫",
+    color: "#ef4444",
+    bg: "rgba(239,68,68,0.12)",
+    route: "/tracker/cravings",
+    active: true,
+  },
+  {
     id: "anemia",
     label: "Anemia",
     emoji: "🩸",
@@ -30,15 +66,6 @@ const TRACKERS = [
     color: "#a855f7",
     bg: "rgba(168,85,247,0.1)",
     route: "/tracker/pcos",
-    active: true,
-  },
-  {
-    id: "general",
-    label: "General",
-    emoji: "💤",
-    color: "#7ed3d4",
-    bg: "rgba(126,211,212,0.1)",
-    route: "/tracker/general",
     active: true,
   },
 ];
@@ -108,23 +135,32 @@ export default function HomeScreen() {
     <SafeAreaView className="flex-1 bg-bg-light">
       <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <View className="flex-row justify-between items-center mb-8 mt-4">
-          <View>
-            <Text className="text-3xl font-bold text-slate-900">
-              Hello, Sarah
-            </Text>
-            <Text className="text-slate-500 mt-1">
-              How are you feeling today?
-            </Text>
-          </View>
-          <View className="relative">
-            <Pressable onPress={() => router.push("/(tabs)/profile")}>
-              <View className="w-12 h-12 rounded-full bg-primary-20 items-center justify-center border-2 border-white">
-                <MaterialIcons name="person" size={24} color="#f471b5" />
-              </View>
-            </Pressable>
+        {/* Right Icons */}
+        <View className="flex-row items-center gap-3">
+
+          {/* Notifications Button */}
+          <Pressable
+            onPress={() => router.push("/notifications")}
+            className="relative"
+          >
+            <View className="w-12 h-12 rounded-full bg-white items-center justify-center border border-slate-200">
+              <MaterialIcons name="notifications-none" size={22} color="#ec4899" />
+            </View>
+
+            {/* Notification Dot */}
+            <View className="absolute top-1 right-1 w-3 h-3 bg-pink-500 rounded-full border-2 border-white" />
+          </Pressable>
+
+          {/* Profile Button */}
+          <Pressable onPress={() => router.push("/(tabs)/profile")}>
+            <View className="w-12 h-12 rounded-full bg-primary-20 items-center justify-center border-2 border-white">
+              <MaterialIcons name="person" size={24} color="#f471b5" />
+            </View>
+
+            {/* Online Dot */}
             <View className="absolute bottom-0 right-0 w-3 h-3 bg-secondary rounded-full border-2 border-bg-light" />
-          </View>
+          </Pressable>
+
         </View>
 
         {/* Start Screening CTA */}
@@ -158,7 +194,7 @@ export default function HomeScreen() {
             </Text>
             <Pressable onPress={() => router.push("/history" as any)}>
               <Text className="text-primary text-sm font-medium">
-                See History
+                View History
               </Text>
             </Pressable>
           </View>
@@ -171,41 +207,64 @@ export default function HomeScreen() {
                   params: { id: latestScreening.id, fromHistory: "true" },
                 })
               }
-              className="bg-white border border-slate-100 rounded-xl p-4"
+              className="bg-[#fde8ef] rounded-2xl p-5"
             >
-              <View className="flex-row items-center gap-4">
-                <View className="w-16 h-16 rounded-lg bg-slate-100 overflow-hidden items-center justify-center">
-                  {latestScreening.imageUri ? (
-                    <Image
-                      source={{ uri: latestScreening.imageUri }}
-                      className="w-full h-full"
-                      resizeMode="cover"
-                    />
-                  ) : (
-                    <MaterialIcons
-                      name="fingerprint"
-                      size={28}
-                      color="#94a3b8"
-                    />
-                  )}
+              {/* Top Row */}
+              <View className="flex-row justify-between items-start mb-4">
+                <View>
+                  <Text className="text-xs uppercase tracking-wider text-pink-500 font-bold mb-1">
+                    hematology
+                  </Text>
+                  <Text className="text-base font-semibold text-slate-900">
+                    {latestScreening.condition}
+                  </Text>
+                  <Text className="text-xs text-slate-500 mt-1">
+                    Last checked: {getTimeAgo(latestScreening.timestamp)}
+                  </Text>
                 </View>
-                <View className="flex-1">
-                  <View className="flex-row items-center justify-between mb-1">
-                    <Text className="text-xs font-medium uppercase tracking-wider text-slate-400">
-                      Last Analysis
-                    </Text>
-                    <Text className="text-xs text-slate-400">
-                      {getTimeAgo(latestScreening.timestamp)}
-                    </Text>
-                  </View>
-                  <View className="flex-row items-center gap-2">
-                    <RiskBadge risk={latestScreening.risk} />
-                    <Text className="text-sm font-medium text-slate-700">
-                      {latestScreening.condition}
-                    </Text>
-                  </View>
+
+                {/* Risk Badge */}
+                <View className="bg-yellow-100 px-3 py-1 rounded-full">
+                  <Text className="text-yellow-700 text-xs font-semibold">
+                    {latestScreening.risk} Risk
+                  </Text>
                 </View>
-                <MaterialIcons name="chevron-right" size={24} color="#cbd5e1" />
+              </View>
+
+              {/* Progress Bar */}
+              <View className="mb-4">
+                <View className="flex-row justify-between mb-1">
+                  <Text className="text-[10px] text-slate-400">Low</Text>
+                  <Text className="text-[10px] text-slate-400">Medium</Text>
+                  <Text className="text-[10px] text-slate-400">High</Text>
+                </View>
+
+                <View className="h-2 bg-slate-200 rounded-full overflow-hidden">
+                  <View
+                    className="h-full bg-yellow-400"
+                    style={{
+                      width:
+                        latestScreening.risk === "Low"
+                          ? "30%"
+                          : latestScreening.risk === "Medium"
+                            ? "60%"
+                            : "90%",
+                    }}
+                  />
+                </View>
+              </View>
+
+              {/* Info Tip */}
+              <View className="flex-row items-start gap-2">
+                <MaterialIcons
+                  name="info-outline"
+                  size={16}
+                  color="#ec4899"
+                />
+                <Text className="text-xs text-slate-600 flex-1">
+                  Consider increasing intake of leafy greens and Vitamin C to improve
+                  absorption.
+                </Text>
               </View>
             </Pressable>
           ) : (
@@ -222,18 +281,18 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {/* Daily Tracking — 3 Tracker Buttons */}
+        {/* Daily Tracking —  Tracker Buttons */}
         <View className="mb-8">
           <Text className="text-lg font-semibold text-slate-900 mb-4">
             Daily Tracking
           </Text>
-          <View className="flex-row gap-3">
+
+          <View className="flex-row flex-wrap justify-between gap-y-4">
             {TRACKERS.map((t) => (
               <Pressable
                 key={t.id}
                 onPress={() => handleTrackerPress(t)}
-                className="flex-1 bg-white rounded-xl border border-slate-100 py-4 items-center active:opacity-80"
-                style={{ opacity: t.active ? 1 : 0.55 }}
+                className="w-[30%] bg-white rounded-xl border border-slate-100 py-4 items-center active:opacity-80"
               >
                 <View
                   className="w-12 h-12 rounded-full items-center justify-center mb-2"
@@ -241,20 +300,66 @@ export default function HomeScreen() {
                 >
                   <Text className="text-xl">{t.emoji}</Text>
                 </View>
+
                 <Text className="text-xs font-semibold text-slate-700">
                   {t.label}
                 </Text>
-                {!t.active && (
-                  <Text
-                    className="text-[8px] font-bold mt-1"
-                    style={{ color: t.color }}
-                  >
-                    SOON
-                  </Text>
-                )}
               </Pressable>
             ))}
           </View>
+        </View>
+        {/* Diet */}
+        <View className="mb-8">
+          {/* Section Header */}
+          <View className="flex-row justify-between items-center mb-4">
+            <Text className="text-lg font-semibold text-slate-900">
+              Diet
+            </Text>
+            <Pressable onPress={() => router.push("/tracker/diet")}>
+              <Text className="text-green-600 text-sm font-medium">
+                View Details
+              </Text>
+            </Pressable>
+          </View>
+
+          {/* Diet Card */}
+          <Pressable
+            onPress={() => router.push("/tracker/diet")}
+            className="bg-[#ECFDF5] rounded-2xl p-5"
+          >
+            {/* Calories */}
+            <View className="mb-4">
+              <View className="flex-row justify-between mb-1">
+                <Text className="text-xs text-slate-500">
+                  Calories Consumed Today
+                </Text>
+                <Text className="text-xs font-semibold text-slate-700">
+                  1,250 / 2,000 kcal
+                </Text>
+              </View>
+
+              <View className="h-2 bg-slate-200 rounded-full overflow-hidden">
+                <View
+                  className="h-full bg-green-500 rounded-full"
+                  style={{ width: "62%" }}
+                />
+              </View>
+            </View>
+
+            {/* Recommendations */}
+            <View className="bg-white/80 rounded-xl p-3">
+              <Text className="text-xs font-semibold text-slate-700 mb-1">
+                Recommended Foods (Iron Deficiency)
+              </Text>
+
+              <Text className="text-xs text-slate-600 leading-5">
+                • Spinach & leafy greens{"\n"}
+                • Lentils & beans{"\n"}
+                • Lean red meat{"\n"}
+                • Citrus fruits (for better iron absorption)
+              </Text>
+            </View>
+          </Pressable>
         </View>
 
         {/* Educational Hub */}
