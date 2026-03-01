@@ -5,7 +5,8 @@ import { router, useFocusEffect } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import ScreeningCard from "@/components/ScreeningCard";
-import { getScreenings, ScreeningEntry } from "@/utils/data";
+import { ScreeningEntry } from "@/utils/data";
+import { getScreenings } from "@/services/healthService";
 
 export default function HistoryScreen() {
   const [screenings, setScreenings] = useState<ScreeningEntry[]>([]);
@@ -95,7 +96,7 @@ export default function HistoryScreen() {
               analysis.
             </Text>
             <Pressable
-              onPress={() => router.push("/screening/symptoms")}
+              onPress={() => router.push("/screening" as any)}
               className="bg-primary py-3 px-8 rounded-full active:opacity-90"
             >
               <Text className="text-white font-semibold">Start First Scan</Text>
@@ -109,7 +110,7 @@ export default function HistoryScreen() {
       {screenings.length > 0 && (
         <View className="absolute bottom-24 right-6">
           <Pressable
-            onPress={() => router.push("/screening/symptoms")}
+            onPress={() => router.push("/screening" as any)}
             className="w-14 h-14 bg-primary rounded-full items-center justify-center active:opacity-90"
           >
             <MaterialIcons name="add-a-photo" size={26} color="white" />

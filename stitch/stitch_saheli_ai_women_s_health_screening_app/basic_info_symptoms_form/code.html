@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#f4256a",
+                        "background-light": "#f8f5f6",
+                        "background-dark": "#221016",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<title>Saheli AI - FemCare Assessment</title>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="relative flex h-auto min-h-screen w-full max-w-[430px] mx-auto flex-col bg-white dark:bg-background-dark overflow-x-hidden shadow-2xl">
+<!-- Top Navigation -->
+<div class="flex items-center bg-white dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-10">
+<div class="text-slate-900 dark:text-slate-100 flex size-12 shrink-0 items-center justify-center cursor-pointer">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-12">FemCare AI Assessment</h2>
+</div>
+<!-- Progress Header -->
+<div class="flex flex-col gap-3 p-4">
+<div class="flex gap-6 justify-between">
+<p class="text-slate-900 dark:text-slate-100 text-base font-semibold leading-normal">Step 1: Basic Info &amp; Symptoms</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal">1 of 3</p>
+</div>
+<div class="rounded-full bg-primary/20 h-2 w-full overflow-hidden">
+<div class="h-full rounded-full bg-primary transition-all duration-300" style="width: 33.33%;"></div>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto pb-24">
+<!-- Section 1: Basic Information -->
+<section class="px-4 py-4">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-primary">person</span>
+<h3 class="text-slate-900 dark:text-slate-100 text-lg font-bold">Basic Information</h3>
+</div>
+<div class="space-y-6">
+<!-- Age Input -->
+<label class="flex flex-col w-full">
+<p class="text-slate-700 dark:text-slate-300 text-sm font-semibold pb-2">Age</p>
+<input class="form-input flex w-full rounded-xl text-slate-900 dark:text-slate-100 focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-primary/20 bg-primary/5 dark:bg-primary/10 h-14 placeholder:text-slate-400 p-4 text-base font-medium" placeholder="Enter your age" type="number"/>
+</label>
+<!-- Height & Weight Pickers -->
+<div class="grid grid-cols-2 gap-4">
+<div class="flex flex-col">
+<p class="text-slate-700 dark:text-slate-300 text-sm font-semibold pb-2">Height</p>
+<div class="flex items-center justify-between bg-primary/5 dark:bg-primary/10 border border-primary/20 rounded-xl h-14 px-4">
+<span class="text-slate-400 material-symbols-outlined">height</span>
+<span class="text-slate-900 dark:text-slate-100 font-medium">5' 6"</span>
+<span class="material-symbols-outlined text-primary text-sm">unfold_more</span>
+</div>
+</div>
+<div class="flex flex-col">
+<p class="text-slate-700 dark:text-slate-300 text-sm font-semibold pb-2">Weight</p>
+<div class="flex items-center justify-between bg-primary/5 dark:bg-primary/10 border border-primary/20 rounded-xl h-14 px-4">
+<span class="text-slate-400 material-symbols-outlined">fitness_center</span>
+<span class="text-slate-900 dark:text-slate-100 font-medium">62 kg</span>
+<span class="material-symbols-outlined text-primary text-sm">unfold_more</span>
+</div>
+</div>
+</div>
+<!-- Weight Toggle -->
+<div class="flex items-center justify-between p-4 bg-primary/5 dark:bg-primary/10 rounded-xl border border-primary/20">
+<p class="text-slate-700 dark:text-slate-300 text-sm font-medium leading-tight max-w-[70%]">Recent unexplained weight changes?</p>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</section>
+<!-- Section 2: Current Symptoms -->
+<section class="px-4 py-6">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-primary">medical_services</span>
+<h3 class="text-slate-900 dark:text-slate-100 text-lg font-bold">Current Symptoms</h3>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-sm mb-4">Select all that apply to you currently.</p>
+<div class="grid grid-cols-1 gap-3">
+<!-- Fatigue -->
+<label class="flex items-center p-4 rounded-xl border border-primary/10 bg-white dark:bg-primary/5 hover:border-primary/40 transition-colors cursor-pointer group">
+<input class="rounded text-primary focus:ring-primary size-5 border-primary/30" type="checkbox"/>
+<span class="ml-4 text-slate-700 dark:text-slate-200 font-medium">Fatigue</span>
+<span class="material-symbols-outlined ml-auto text-slate-300 group-hover:text-primary transition-colors">bedtime</span>
+</label>
+<!-- Pelvic Pain -->
+<label class="flex items-center p-4 rounded-xl border border-primary/10 bg-white dark:bg-primary/5 hover:border-primary/40 transition-colors cursor-pointer group">
+<input class="rounded text-primary focus:ring-primary size-5 border-primary/30" type="checkbox"/>
+<span class="ml-4 text-slate-700 dark:text-slate-200 font-medium">Pelvic Pain</span>
+<span class="material-symbols-outlined ml-auto text-slate-300 group-hover:text-primary transition-colors">emergency</span>
+</label>
+<!-- Discharge/Itching -->
+<label class="flex items-center p-4 rounded-xl border border-primary/10 bg-white dark:bg-primary/5 hover:border-primary/40 transition-colors cursor-pointer group">
+<input class="rounded text-primary focus:ring-primary size-5 border-primary/30" type="checkbox"/>
+<span class="ml-4 text-slate-700 dark:text-slate-200 font-medium">Discharge/Itching</span>
+<span class="material-symbols-outlined ml-auto text-slate-300 group-hover:text-primary transition-colors">water_drop</span>
+</label>
+<!-- Breast Changes -->
+<label class="flex items-center p-4 rounded-xl border border-primary/10 bg-white dark:bg-primary/5 hover:border-primary/40 transition-colors cursor-pointer group">
+<input class="rounded text-primary focus:ring-primary size-5 border-primary/30" type="checkbox"/>
+<span class="ml-4 text-slate-700 dark:text-slate-200 font-medium">Breast Changes</span>
+<span class="material-symbols-outlined ml-auto text-slate-300 group-hover:text-primary transition-colors">circles</span>
+</label>
+<!-- Urinary Issues -->
+<label class="flex items-center p-4 rounded-xl border border-primary/10 bg-white dark:bg-primary/5 hover:border-primary/40 transition-colors cursor-pointer group">
+<input class="rounded text-primary focus:ring-primary size-5 border-primary/30" type="checkbox"/>
+<span class="ml-4 text-slate-700 dark:text-slate-200 font-medium">Urinary Issues</span>
+<span class="material-symbols-outlined ml-auto text-slate-300 group-hover:text-primary transition-colors">wash</span>
+</label>
+<!-- Hirsutism -->
+<label class="flex items-center p-4 rounded-xl border border-primary/10 bg-white dark:bg-primary/5 hover:border-primary/40 transition-colors cursor-pointer group">
+<input class="rounded text-primary focus:ring-primary size-5 border-primary/30" type="checkbox"/>
+<span class="ml-4 text-slate-700 dark:text-slate-200 font-medium">Hirsutism (Excess hair)</span>
+<span class="material-symbols-outlined ml-auto text-slate-300 group-hover:text-primary transition-colors">face</span>
+</label>
+<!-- Skin Changes -->
+<label class="flex items-center p-4 rounded-xl border border-primary/10 bg-white dark:bg-primary/5 hover:border-primary/40 transition-colors cursor-pointer group">
+<input class="rounded text-primary focus:ring-primary size-5 border-primary/30" type="checkbox"/>
+<span class="ml-4 text-slate-700 dark:text-slate-200 font-medium">Skin Changes / Acne</span>
+<span class="material-symbols-outlined ml-auto text-slate-300 group-hover:text-primary transition-colors">auto_fix_high</span>
+</label>
+</div>
+</section>
+</div>
+<!-- Footer Action -->
+<div class="fixed bottom-0 w-full max-w-[430px] p-4 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-t border-slate-100 dark:border-slate-800">
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-primary/25 flex items-center justify-center gap-2">
+                Continue to Next Step
+                <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</body></html>

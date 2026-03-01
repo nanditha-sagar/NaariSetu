@@ -5,12 +5,14 @@ import {
   ThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
+import { Stack, useSegments, router } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import "react-native-reanimated";
 
 import { useColorScheme } from "@/components/useColorScheme";
+import { supabase } from "@/utils/supabase";
+import { Session } from "@supabase/supabase-js";
 import "../global.css";
 
 export { ErrorBoundary } from "expo-router";
@@ -46,6 +48,52 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
+  const segments = useSegments();
+  const [session, setSession] = useState<Session | null>(null);
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    // Check initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setIsReady(true);
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (!isReady) return;
+
+    const inAuthGroup =
+      segments[0] === "login" ||
+      segments[0] === "signup" ||
+      segments[0] === "welcome";
+
+    if (session && inAuthGroup) {
+      // Redirect logged-in users away from auth screens
+      router.replace("/(tabs)/home");
+    } else if (
+      !session &&
+      !inAuthGroup &&
+      segments[0] !== "screening" &&
+      segments[0] !== "modal" &&
+      segments[0] !== undefined
+    ) {
+      // Optional: Redirect unauthenticated users to welcome (if they try to access tabs)
+      // For now, only redirect if they are specifically in tabs.
+      if (segments[0] === "(tabs)") {
+        router.replace("/welcome");
+      }
+    }
+  }, [session, segments, isReady]);
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
@@ -59,6 +107,10 @@ function RootLayoutNav() {
         <Stack.Screen name="signup" options={{ headerShown: false }} />
 
         <Stack.Screen
+          name="screening/index"
+          options={{ headerShown: false, presentation: "card" }}
+        />
+        <Stack.Screen
           name="screening/symptoms"
           options={{ headerShown: false, presentation: "card" }}
         />
@@ -69,6 +121,14 @@ function RootLayoutNav() {
         <Stack.Screen
           name="screening/results"
           options={{ headerShown: false, presentation: "card" }}
+        />
+        <Stack.Screen
+          name="screening/assessment"
+          options={{ headerShown: false, presentation: "card" }}
+        />
+        <Stack.Screen
+          name="edit-profile"
+          options={{ headerShown: false, presentation: "modal" }}
         />
         <Stack.Screen name="modal" options={{ presentation: "modal" }} />
       </Stack>

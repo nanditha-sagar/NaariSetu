@@ -7,7 +7,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import RiskBadge from "@/components/RiskBadge";
 import ConfidenceBar from "@/components/ConfidenceBar";
 import TestRecommendationCard from "@/components/TestRecommendationCard";
-import { getScreenings, ScreeningEntry } from "@/utils/data";
+import { ScreeningEntry } from "@/utils/data";
+import { getScreenings } from "@/services/healthService";
 
 export default function ResultsScreen() {
   const params = useLocalSearchParams<{ id: string; fromHistory?: string }>();

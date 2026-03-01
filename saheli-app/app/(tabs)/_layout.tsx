@@ -72,7 +72,7 @@ export default function TabLayout() {
         listeners={{
           tabPress: (e) => {
             e.preventDefault();
-            router.push("/screening/symptoms");
+            router.push("/screening" as any);
           },
         }}
       />

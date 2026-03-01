@@ -1,18 +1,67 @@
-import React, { useState } from "react";
-import { View, Text, Switch, Pressable, ScrollView, Alert } from "react-native";
+import React, { useState, useCallback } from "react";
+import {
+  View,
+  Text,
+  Switch,
+  Pressable,
+  ScrollView,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { supabase } from "@/utils/supabase";
+import { authService, ProfileInput } from "@/services/authService";
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<ProfileInput | null>(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
 
-  const handleLogout = () => {
-    // Navigate directly to welcome to ensure it works
-    router.replace("/welcome");
+  useFocusEffect(
+    useCallback(() => {
+      loadProfile();
+    }, []),
+  );
+
+  const loadProfile = async () => {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        router.replace("/login");
+        return;
+      }
+      const data = await authService.getProfile(user.id);
+      setProfile(data);
+    } catch (error) {
+      console.error("Error loading profile:", error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      router.replace("/welcome");
+    } catch (error: any) {
+      Alert.alert("Logout Error", error.message);
+    }
+  };
+
+  if (loading && !profile) {
+    return (
+      <View className="flex-1 justify-center items-center bg-slate-50">
+        <ActivityIndicator size="large" color="#ec135b" />
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-slate-50">
@@ -20,7 +69,6 @@ export default function ProfileScreen() {
         {/* Header */}
         <View className="px-6 py-4 flex-row items-center justify-between">
           <Text className="text-2xl font-bold text-slate-900">Profile</Text>
-          {/* Optional: Add an Edit button or similar here if needed in future */}
         </View>
 
         {/* User Info Card */}
@@ -32,25 +80,42 @@ export default function ProfileScreen() {
             <View className="absolute bottom-0 right-0 w-5 h-5 bg-green-500 rounded-full border-2 border-white" />
           </View>
           <View className="ml-4 flex-1">
-            <Text className="text-lg font-bold text-slate-900">Sarah Johnson</Text>
-            <Text className="text-slate-500 text-sm">sarah.j@example.com</Text>
-            <Pressable className="mt-2 bg-pink-50 self-start px-3 py-1 rounded-full">
-              <Text className="text-pink-600 text-xs font-semibold">Edit Profile</Text>
+            <Text className="text-lg font-bold text-slate-900">
+              {profile?.full_name || "User Name"}
+            </Text>
+            <Text className="text-slate-500 text-sm">
+              {profile?.email || "User Email"}
+            </Text>
+            <Pressable
+              onPress={() => router.push("/edit-profile")}
+              className="mt-2 bg-pink-50 self-start px-3 py-1 rounded-full"
+            >
+              <Text className="text-pink-600 text-xs font-semibold">
+                Edit Profile
+              </Text>
             </Pressable>
           </View>
         </View>
 
         {/* Settings Groups */}
         <View className="mx-6 mb-8">
-          <Text className="text-slate-500 text-sm font-semibold uppercase tracking-wider mb-4 px-2">Preferences</Text>
+          <Text className="text-slate-500 text-sm font-semibold uppercase tracking-wider mb-4 px-2">
+            Preferences
+          </Text>
 
           <View className="bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm">
             <View className="flex-row items-center justify-between p-4 border-b border-slate-50">
               <View className="flex-row items-center gap-3">
                 <View className="w-8 h-8 rounded-full bg-blue-50 items-center justify-center">
-                  <MaterialIcons name="notifications" size={18} color="#3b82f6" />
+                  <MaterialIcons
+                    name="notifications"
+                    size={18}
+                    color="#3b82f6"
+                  />
                 </View>
-                <Text className="text-slate-700 font-medium">Notifications</Text>
+                <Text className="text-slate-700 font-medium">
+                  Notifications
+                </Text>
               </View>
               <Switch
                 value={notificationsEnabled}
@@ -76,7 +141,9 @@ export default function ProfileScreen() {
         </View>
 
         <View className="mx-6 mb-8">
-          <Text className="text-slate-500 text-sm font-semibold uppercase tracking-wider mb-4 px-2">Support</Text>
+          <Text className="text-slate-500 text-sm font-semibold uppercase tracking-wider mb-4 px-2">
+            Support
+          </Text>
 
           <View className="bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm">
             <Pressable className="flex-row items-center justify-between p-4 border-b border-slate-50 active:bg-slate-50">
@@ -94,7 +161,9 @@ export default function ProfileScreen() {
                 <View className="w-8 h-8 rounded-full bg-orange-50 items-center justify-center">
                   <MaterialIcons name="privacy-tip" size={18} color="#f97316" />
                 </View>
-                <Text className="text-slate-700 font-medium">Privacy Policy</Text>
+                <Text className="text-slate-700 font-medium">
+                  Privacy Policy
+                </Text>
               </View>
               <MaterialIcons name="chevron-right" size={20} color="#cbd5e1" />
             </Pressable>
@@ -113,7 +182,6 @@ export default function ProfileScreen() {
         <View className="items-center mb-8">
           <Text className="text-slate-400 text-xs">NaariSetu v1.0.0</Text>
         </View>
-
       </ScrollView>
     </SafeAreaView>
   );

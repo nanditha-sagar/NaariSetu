@@ -9,8 +9,8 @@ import {
   QUESTIONNAIRE_SECTIONS,
   QuestionnaireAnswers,
   runMockAnalysis,
-  saveScreening,
 } from "@/utils/data";
+import { saveScreening } from "@/services/healthService";
 
 export default function SymptomsScreen() {
   const [currentSection, setCurrentSection] = useState(0);

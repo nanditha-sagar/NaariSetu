@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Medical History &amp; Lifestyle Form</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ee2b7c",
+                        "background-light": "#f8f6f7",
+                        "background-dark": "#221018",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Manrope', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100">
+<div class="relative flex min-h-screen w-full flex-col max-w-md mx-auto bg-white dark:bg-background-dark shadow-xl overflow-x-hidden">
+<!-- Top Navigation -->
+<div class="flex items-center bg-white dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-10 border-b border-primary/10">
+<div class="text-slate-900 dark:text-slate-100 flex size-10 shrink-0 items-center justify-center cursor-pointer">
+<span class="material-symbols-outlined">arrow_back_ios</span>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-10">Saheli Assessment</h2>
+</div>
+<!-- Progress Indicator -->
+<div class="flex flex-col gap-2 p-4">
+<div class="flex gap-6 justify-between items-center">
+<p class="text-slate-900 dark:text-slate-100 text-sm font-semibold leading-normal">Step 3 of 3: Final Review</p>
+<p class="text-primary text-sm font-bold leading-normal">100%</p>
+</div>
+<div class="rounded-full bg-primary/10 h-2 w-full overflow-hidden">
+<div class="h-full rounded-full bg-primary transition-all duration-500" style="width: 100%;"></div>
+</div>
+</div>
+<!-- Section 4: Medical History -->
+<div class="px-4 py-4">
+<span class="text-primary text-xs font-bold uppercase tracking-widest">Section 4</span>
+<h2 class="text-slate-900 dark:text-slate-100 text-2xl font-extrabold leading-tight tracking-[-0.015em] mb-4">Medical &amp; Family History</h2>
+<h3 class="text-slate-800 dark:text-slate-200 text-base font-bold mb-3">Personal Conditions</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm mb-4">Select all that apply to your medical journey.</p>
+<div class="flex gap-3 flex-wrap mb-8">
+<div class="flex h-10 items-center justify-center gap-x-2 rounded-xl bg-primary text-white px-4 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+<p class="text-sm font-semibold">Anemia</p>
+</div>
+<div class="flex h-10 items-center justify-center gap-x-2 rounded-xl bg-primary/10 text-slate-800 dark:text-slate-200 px-4 border border-primary/20">
+<p class="text-sm font-medium">Thyroid</p>
+</div>
+<div class="flex h-10 items-center justify-center gap-x-2 rounded-xl bg-primary text-white px-4 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+<p class="text-sm font-semibold">PCOS</p>
+</div>
+<div class="flex h-10 items-center justify-center gap-x-2 rounded-xl bg-primary/10 text-slate-800 dark:text-slate-200 px-4 border border-primary/20">
+<p class="text-sm font-medium">Diabetes</p>
+</div>
+</div>
+<!-- Family History Checklist -->
+<h3 class="text-slate-800 dark:text-slate-200 text-base font-bold mb-3">Family History</h3>
+<div class="space-y-3 mb-8">
+<label class="flex items-center p-4 rounded-xl border border-primary/10 bg-primary/5 cursor-pointer">
+<input checked="" class="w-5 h-5 rounded text-primary border-primary/30 focus:ring-primary focus:ring-offset-0" type="checkbox"/>
+<span class="ml-3 text-slate-800 dark:text-slate-200 font-medium">Cancers (Breast/Ovarian)</span>
+</label>
+<label class="flex items-center p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/20 cursor-pointer">
+<input class="w-5 h-5 rounded text-primary border-slate-300 focus:ring-primary focus:ring-offset-0" type="checkbox"/>
+<span class="ml-3 text-slate-800 dark:text-slate-200 font-medium">Diabetes (Type 2)</span>
+</label>
+<label class="flex items-center p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/20 cursor-pointer">
+<input class="w-5 h-5 rounded text-primary border-slate-300 focus:ring-primary focus:ring-offset-0" type="checkbox"/>
+<span class="ml-3 text-slate-800 dark:text-slate-200 font-medium">Heart Disease</span>
+</label>
+</div>
+</div>
+<!-- Section 5: Lifestyle -->
+<div class="px-4 py-4 bg-primary/5 border-y border-primary/10">
+<span class="text-primary text-xs font-bold uppercase tracking-widest">Section 5</span>
+<h2 class="text-slate-900 dark:text-slate-100 text-2xl font-extrabold leading-tight tracking-[-0.015em] mb-6">Lifestyle &amp; Well-being</h2>
+<!-- Stress Slider -->
+<div class="mb-8">
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-slate-800 dark:text-slate-200 text-base font-bold">Stress Levels</h3>
+<span class="text-primary font-bold px-3 py-1 bg-primary/10 rounded-full text-xs">Moderate</span>
+</div>
+<input class="w-full h-2 bg-primary/20 rounded-full appearance-none cursor-pointer accent-primary" max="100" min="0" type="range" value="45"/>
+<div class="flex justify-between mt-2">
+<span class="text-slate-400 text-xs font-medium uppercase tracking-tighter">Low</span>
+<span class="text-slate-400 text-xs font-medium uppercase tracking-tighter">High</span>
+</div>
+</div>
+<!-- Sleep Selection -->
+<div class="mb-8">
+<h3 class="text-slate-800 dark:text-slate-200 text-base font-bold mb-3">Daily Sleep Hours</h3>
+<div class="grid grid-cols-4 gap-2">
+<button class="py-3 px-1 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 text-sm font-medium">4-5h</button>
+<button class="py-3 px-1 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 text-sm font-medium">5-6h</button>
+<button class="py-3 px-1 rounded-xl border-2 border-primary bg-white dark:bg-slate-900 text-primary text-sm font-bold shadow-sm">7-8h</button>
+<button class="py-3 px-1 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 text-sm font-medium">8h+</button>
+</div>
+</div>
+<!-- Toggles -->
+<div class="space-y-4 mb-4">
+<div class="flex items-center justify-between p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">wine_bar</span>
+<span class="text-slate-800 dark:text-slate-200 font-bold">Alcohol Consumption</span>
+</div>
+<div class="relative inline-flex items-center cursor-pointer">
+<div class="w-11 h-6 bg-primary rounded-full peer"></div>
+<div class="absolute left-[26px] top-[3px] bg-white border-slate-300 border rounded-full h-4.5 w-4.5 transition-all"></div>
+</div>
+</div>
+<div class="flex items-center justify-between p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">smoke_free</span>
+<span class="text-slate-800 dark:text-slate-200 font-bold">Smoking</span>
+</div>
+<div class="relative inline-flex items-center cursor-pointer">
+<div class="w-11 h-6 bg-slate-200 dark:bg-slate-700 rounded-full peer"></div>
+<div class="absolute left-[3px] top-[3px] bg-white border-slate-300 border rounded-full h-4.5 w-4.5 transition-all"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer / CTA -->
+<div class="p-4 mt-auto">
+<div class="flex items-start gap-3 mb-6 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl">
+<span class="material-symbols-outlined text-primary mt-1">verified_user</span>
+<p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                    By completing this assessment, Saheli AI will generate a personalized health report based on your clinical history and lifestyle data. All data is encrypted and private.
+                </p>
+</div>
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2">
+                Complete Assessment
+                <span class="material-symbols-outlined">trending_flat</span>
+</button>
+<p class="text-center text-slate-400 text-xs mt-4 pb-4">Safe &amp; Secure with 256-bit Encryption</p>
+</div>
+</div>
+</body></html>
