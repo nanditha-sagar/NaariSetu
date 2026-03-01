@@ -6,21 +6,17 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import RiskBadge from "@/components/RiskBadge";
 import HealthTipCard from "@/components/HealthTipCard";
-import {
-  getLatestScreening,
-  getRandomTip,
-  getTimeAgo,
-  ScreeningEntry,
-} from "@/utils/data";
+import { getRandomTip, ScreeningEntry } from "@/utils/data";
+import { getLatestScreening, getTimeAgo } from "@/services/healthService";
 
 const TRACKERS = [
   {
-    id: "period",
-    label: "Period",
-    emoji: "🩸",
+    id: "BP",
+    label: "BP",
+    emoji: "🩺",
     color: "#ec4899",
     bg: "rgba(236,72,153,0.12)",
-    route: "/tracker/period",
+    route: "/tracker/BP",
     active: true,
   },
   {
@@ -60,12 +56,12 @@ const TRACKERS = [
     active: true,
   },
   {
-    id: "pcos",
-    label: "PCOS",
-    emoji: "🔬",
+    id: "Glucose",
+    label: "Glucose",
+    emoji: "◻️",
     color: "#a855f7",
     bg: "rgba(168,85,247,0.1)",
-    route: "/tracker/pcos",
+    route: "/tracker/Glucose",
     active: true,
   },
 ];
@@ -103,11 +99,14 @@ const EDUCATIONAL_RESOURCES = [
   },
 ];
 
+import { supabase } from "@/utils/supabase";
+
 export default function HomeScreen() {
   const [latestScreening, setLatestScreening] = useState<ScreeningEntry | null>(
     null,
   );
   const [healthTip, setHealthTip] = useState(getRandomTip());
+  const [userProfile, setUserProfile] = useState<any>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -116,8 +115,28 @@ export default function HomeScreen() {
   );
 
   const loadData = async () => {
-    const latest = await getLatestScreening();
-    setLatestScreening(latest);
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        // Fetch profile
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+
+        if (profile) {
+          setUserProfile(profile);
+        }
+      }
+
+      const latest = await getLatestScreening();
+      setLatestScreening(latest);
+    } catch (error) {
+      console.error("Error loading home data:", error);
+    }
   };
 
   const handleTrackerPress = (tracker: (typeof TRACKERS)[0]) => {
@@ -135,37 +154,53 @@ export default function HomeScreen() {
     <SafeAreaView className="flex-1 bg-bg-light">
       <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
         {/* Header */}
-        {/* Right Icons */}
-        <View className="flex-row items-center gap-3">
+        <View className="flex-row justify-between items-center mt-6 mb-8">
+          {/* Welcome Text */}
+          <View>
+            <Text className="text-2xl font-bold text-slate-900">
+              {userProfile?.full_name || "Welcome Back"}
+            </Text>
+            <Text className="text-slate-500 text-sm">
+              {userProfile
+                ? `${userProfile.age || "--"} yrs ${userProfile.city || ""}`
+                : "Guest User"}
+            </Text>
+          </View>
 
-          {/* Notifications Button */}
-          <Pressable
-            onPress={() => router.push("/notifications")}
-            className="relative"
-          >
-            <View className="w-12 h-12 rounded-full bg-white items-center justify-center border border-slate-200">
-              <MaterialIcons name="notifications-none" size={22} color="#ec4899" />
-            </View>
+          {/* Right Icons */}
+          <View className="flex-row items-center gap-3">
+            {/* Notifications Button */}
+            <Pressable
+              onPress={() => router.push("/notifications" as any)}
+              className="relative"
+            >
+              <View className="w-12 h-12 rounded-full bg-white items-center justify-center border border-slate-200">
+                <MaterialIcons
+                  name="notifications-none"
+                  size={22}
+                  color="#ec4899"
+                />
+              </View>
 
-            {/* Notification Dot */}
-            <View className="absolute top-1 right-1 w-3 h-3 bg-pink-500 rounded-full border-2 border-white" />
-          </Pressable>
+              {/* Notification Dot */}
+              <View className="absolute top-1 right-1 w-3 h-3 bg-pink-500 rounded-full border-2 border-white" />
+            </Pressable>
 
-          {/* Profile Button */}
-          <Pressable onPress={() => router.push("/(tabs)/profile")}>
-            <View className="w-12 h-12 rounded-full bg-primary-20 items-center justify-center border-2 border-white">
-              <MaterialIcons name="person" size={24} color="#f471b5" />
-            </View>
+            {/* Profile Button */}
+            <Pressable onPress={() => router.push("/(tabs)/profile")}>
+              <View className="w-12 h-12 rounded-full bg-primary-20 items-center justify-center border-2 border-white">
+                <MaterialIcons name="person" size={24} color="#f471b5" />
+              </View>
 
-            {/* Online Dot */}
-            <View className="absolute bottom-0 right-0 w-3 h-3 bg-secondary rounded-full border-2 border-bg-light" />
-          </Pressable>
-
+              {/* Online Dot */}
+              <View className="absolute bottom-0 right-0 w-3 h-3 bg-secondary rounded-full border-2 border-bg-light" />
+            </Pressable>
+          </View>
         </View>
 
         {/* Start Screening CTA */}
         <Pressable
-          onPress={() => router.push("/screening/symptoms")}
+          onPress={() => router.push("/screening" as any)}
           className="w-full bg-primary p-6 rounded-xl mb-8 items-center relative overflow-hidden active:opacity-90"
         >
           <View className="absolute top-0 right-0 w-32 h-32 bg-white-10 rounded-full -mr-10 -mt-10" />
@@ -256,14 +291,10 @@ export default function HomeScreen() {
 
               {/* Info Tip */}
               <View className="flex-row items-start gap-2">
-                <MaterialIcons
-                  name="info-outline"
-                  size={16}
-                  color="#ec4899"
-                />
+                <MaterialIcons name="info-outline" size={16} color="#ec4899" />
                 <Text className="text-xs text-slate-600 flex-1">
-                  Consider increasing intake of leafy greens and Vitamin C to improve
-                  absorption.
+                  Consider increasing intake of leafy greens and Vitamin C to
+                  improve absorption.
                 </Text>
               </View>
             </Pressable>
@@ -312,10 +343,8 @@ export default function HomeScreen() {
         <View className="mb-8">
           {/* Section Header */}
           <View className="flex-row justify-between items-center mb-4">
-            <Text className="text-lg font-semibold text-slate-900">
-              Diet
-            </Text>
-            <Pressable onPress={() => router.push("/tracker/diet")}>
+            <Text className="text-lg font-semibold text-slate-900">Diet</Text>
+            <Pressable onPress={() => router.push("/tracker/general" as any)}>
               <Text className="text-green-600 text-sm font-medium">
                 View Details
               </Text>
@@ -324,7 +353,7 @@ export default function HomeScreen() {
 
           {/* Diet Card */}
           <Pressable
-            onPress={() => router.push("/tracker/diet")}
+            onPress={() => router.push("/tracker/general" as any)}
             className="bg-[#ECFDF5] rounded-2xl p-5"
           >
             {/* Calories */}
@@ -353,10 +382,8 @@ export default function HomeScreen() {
               </Text>
 
               <Text className="text-xs text-slate-600 leading-5">
-                • Spinach & leafy greens{"\n"}
-                • Lentils & beans{"\n"}
-                • Lean red meat{"\n"}
-                • Citrus fruits (for better iron absorption)
+                • Spinach & leafy greens{"\n"}• Lentils & beans{"\n"}• Lean red
+                meat{"\n"}• Citrus fruits (for better iron absorption)
               </Text>
             </View>
           </Pressable>
@@ -397,7 +424,11 @@ export default function HomeScreen() {
                   </View>
                   <View className="absolute top-2 left-2 bg-white/90 px-2 py-1 rounded text-xs font-medium">
                     <Text
-                      style={{ color: item.color, fontSize: 10, fontWeight: "700" }}
+                      style={{
+                        color: item.color,
+                        fontSize: 10,
+                        fontWeight: "700",
+                      }}
                     >
                       {item.type.toUpperCase()}
                     </Text>

@@ -5,7 +5,8 @@ import { router, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 
-import { getScreenings, saveScreening } from "@/utils/data";
+import { ScreeningEntry } from "@/utils/data";
+import { getScreenings, saveScreening } from "@/services/healthService";
 
 export default function ScanScreen() {
   const params = useLocalSearchParams<{
@@ -70,16 +71,11 @@ export default function ScanScreen() {
       // Update the screening entry with the image
       if (params.screeningId) {
         const screenings = await getScreenings();
-        const idx = screenings.findIndex((s) => s.id === params.screeningId);
-        if (idx >= 0) {
-          screenings[idx].imageUri = imageUri;
-          screenings[idx].type = "nail_analysis";
-          const AsyncStorage =
-            require("@react-native-async-storage/async-storage").default;
-          await AsyncStorage.setItem(
-            "saheliScreenings",
-            JSON.stringify(screenings),
-          );
+        const entry = screenings.find((s) => s.id === params.screeningId);
+        if (entry) {
+          entry.imageUri = imageUri;
+          entry.type = "nail_analysis";
+          await saveScreening(entry);
         }
       }
 

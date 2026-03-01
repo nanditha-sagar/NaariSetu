@@ -1,13 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
-// Storage keys
-const KEYS = {
-  SYMPTOMS: "saheliSymptoms",
-  SCREENINGS: "saheliScreenings",
-  DAILY_LOG: "saheliDailyLog",
-  USER: "saheliUser",
-};
-
 // Types
 export interface SymptomEntry {
   id: string;
@@ -42,6 +32,37 @@ export interface DailyLog {
     hydration?: number;
     sleep?: number;
   };
+}
+
+export interface AssessmentData {
+  dob: string;
+  maritalStatus: string;
+  bloodGroup: string;
+  occupation: string;
+  height: string;
+  weight: string;
+  activityLevel: string;
+  dietType: string;
+  waterIntake: string;
+  medicalConditions: string[];
+  currentSymptoms: string[];
+  vitaminDeficiencies: string[];
+  lastPeriodDate: string;
+  avgCycleLength: string;
+  periodRegularity: string;
+  bleedingDuration: string;
+  periodFlow: string;
+  familyHistory: string[];
+  stressLevel: number;
+  sleepHours: string;
+  alcohol: boolean;
+  smoking: boolean;
+  primaryGoal: string;
+  cravings: string;
+  moodSwings: string;
+  periodAcne: string;
+  periodActiveness: string;
+  periodCramps: string;
 }
 
 // ─── Questionnaire Types ───
@@ -519,60 +540,6 @@ export function runMockAnalysis(
   };
 }
 
-// Storage helpers
-export async function saveScreening(entry: ScreeningEntry): Promise<void> {
-  try {
-    const existing = await getScreenings();
-    existing.unshift(entry);
-    await AsyncStorage.setItem(KEYS.SCREENINGS, JSON.stringify(existing));
-  } catch (e) {
-    console.error("Failed to save screening:", e);
-  }
-}
-
-export async function getScreenings(): Promise<ScreeningEntry[]> {
-  try {
-    const data = await AsyncStorage.getItem(KEYS.SCREENINGS);
-    return data ? JSON.parse(data) : [];
-  } catch (e) {
-    console.error("Failed to load screenings:", e);
-    return [];
-  }
-}
-
-export async function getLatestScreening(): Promise<ScreeningEntry | null> {
-  const screenings = await getScreenings();
-  return screenings.length > 0 ? screenings[0] : null;
-}
-
-export async function saveDailyLog(
-  category: string,
-  value: number | boolean,
-): Promise<void> {
-  try {
-    const today = new Date().toISOString().split("T")[0];
-    const data = await AsyncStorage.getItem(KEYS.DAILY_LOG);
-    const logs: DailyLog = data ? JSON.parse(data) : {};
-    if (!logs[today]) logs[today] = {};
-    (logs[today] as any)[category] = value;
-    await AsyncStorage.setItem(KEYS.DAILY_LOG, JSON.stringify(logs));
-  } catch (e) {
-    console.error("Failed to save daily log:", e);
-  }
-}
-
-export async function getDailyLog(date?: string): Promise<Record<string, any>> {
-  try {
-    const targetDate = date || new Date().toISOString().split("T")[0];
-    const data = await AsyncStorage.getItem(KEYS.DAILY_LOG);
-    const logs: DailyLog = data ? JSON.parse(data) : {};
-    return logs[targetDate] || {};
-  } catch (e) {
-    console.error("Failed to load daily log:", e);
-    return {};
-  }
-}
-
 // Health tips
 export const HEALTH_TIPS = [
   "Nail ridges can sometimes indicate hydration levels or nutrient absorption. Remember to drink at least 2L of water today!",
@@ -587,42 +554,4 @@ export const HEALTH_TIPS = [
 
 export function getRandomTip(): string {
   return HEALTH_TIPS[Math.floor(Math.random() * HEALTH_TIPS.length)];
-}
-
-// Format date helpers
-export function formatDate(isoString: string): string {
-  const date = new Date(isoString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  if (diffDays === 0) {
-    return `Today, ${date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })}`;
-  } else if (diffDays === 1) {
-    return "Yesterday";
-  } else if (diffDays < 7) {
-    return `${diffDays} days ago`;
-  } else {
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  }
-}
-
-export function getTimeAgo(isoString: string): string {
-  const date = new Date(isoString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  if (diffDays === 0) return "Today";
-  if (diffDays === 1) return "Yesterday";
-  if (diffDays < 7) return `${diffDays} days ago`;
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
 }
