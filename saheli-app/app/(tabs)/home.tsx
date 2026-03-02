@@ -99,7 +99,8 @@ const EDUCATIONAL_RESOURCES = [
   },
 ];
 
-import { supabase } from "@/utils/supabase";
+import { auth, db } from "@/utils/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 export default function HomeScreen() {
   const [latestScreening, setLatestScreening] = useState<ScreeningEntry | null>(
@@ -116,19 +117,13 @@ export default function HomeScreen() {
 
   const loadData = async () => {
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const user = auth.currentUser;
       if (user) {
         // Fetch profile
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", user.id)
-          .single();
+        const docSnap = await getDoc(doc(db, "profiles", user.uid));
 
-        if (profile) {
-          setUserProfile(profile);
+        if (docSnap.exists()) {
+          setUserProfile(docSnap.data());
         }
       }
 

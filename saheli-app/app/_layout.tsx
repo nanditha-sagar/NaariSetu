@@ -11,8 +11,8 @@ import { useEffect, useState } from "react";
 import "react-native-reanimated";
 
 import { useColorScheme } from "@/components/useColorScheme";
-import { supabase } from "@/utils/supabase";
-import { Session } from "@supabase/supabase-js";
+import { auth } from "@/utils/firebase";
+import { onAuthStateChanged, User } from "firebase/auth";
 import "../global.css";
 
 export { ErrorBoundary } from "expo-router";
@@ -49,24 +49,17 @@ export default function RootLayout() {
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
   const segments = useSegments();
-  const [session, setSession] = useState<Session | null>(null);
+  const [session, setSession] = useState<User | null>(null);
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    // Check initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
+    // Listen for auth changes (this also handles initial session check)
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setSession(user);
       setIsReady(true);
     });
 
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-
-    return () => subscription.unsubscribe();
+    return unsubscribe;
   }, []);
 
   useEffect(() => {

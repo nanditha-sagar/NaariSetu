@@ -11,7 +11,8 @@ import {
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter, useFocusEffect } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { supabase } from "@/utils/supabase";
+import { auth } from "@/utils/firebase";
+import { signOut } from "firebase/auth";
 import { authService, ProfileInput } from "@/services/authService";
 
 export default function ProfileScreen() {
@@ -29,14 +30,12 @@ export default function ProfileScreen() {
 
   const loadProfile = async () => {
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const user = auth.currentUser;
       if (!user) {
         router.replace("/login");
         return;
       }
-      const data = await authService.getProfile(user.id);
+      const data = await authService.getProfile(user.uid);
       setProfile(data);
     } catch (error) {
       console.error("Error loading profile:", error);
@@ -47,8 +46,7 @@ export default function ProfileScreen() {
 
   const handleLogout = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      await signOut(auth);
       router.replace("/welcome");
     } catch (error: any) {
       Alert.alert("Logout Error", error.message);

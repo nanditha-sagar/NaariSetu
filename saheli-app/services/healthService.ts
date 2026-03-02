@@ -1,46 +1,48 @@
-import { supabase } from "../utils/supabase";
+import { auth, db } from "../utils/firebase";
+import {
+  collection,
+  doc,
+  setDoc,
+  getDoc,
+  getDocs,
+  query,
+  orderBy,
+  where,
+} from "firebase/firestore";
 import { ScreeningEntry, AssessmentData } from "../utils/data";
 
-// Storage helpers migrated to Supabase
+// Storage helpers migrated to Firebase Firestore
 export async function saveScreening(entry: ScreeningEntry): Promise<void> {
   try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = auth.currentUser;
     if (!user) throw new Error("User not authenticated");
 
-    const { error } = await supabase.from("screenings").insert([
-      {
-        id: entry.id,
-        user_id: user.id,
-        type: entry.type,
-        condition: entry.condition,
-        risk: entry.risk,
-        confidence: entry.confidence,
-        tests: entry.tests,
-        image_uri: entry.imageUri,
-        timestamp: entry.timestamp,
-        answers: entry.answers,
-      },
-    ]);
-
-    if (error) throw error;
+    await setDoc(doc(db, "screenings", entry.id), {
+      user_id: user.uid,
+      type: entry.type,
+      condition: entry.condition,
+      risk: entry.risk,
+      confidence: entry.confidence,
+      tests: entry.tests,
+      image_uri: entry.imageUri,
+      timestamp: entry.timestamp,
+      answers: entry.answers,
+    });
   } catch (e) {
-    console.error("Failed to save screening to Supabase:", e);
+    console.error("Failed to save screening to Firestore:", e);
   }
 }
 
 export async function saveFullAssessment(data: AssessmentData): Promise<void> {
   try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = auth.currentUser;
     if (!user) throw new Error("User not authenticated");
 
     // 1. Update Profile with persistent data
-    const { error: profileError } = await supabase.from("profiles").upsert(
+    const profileRef = doc(db, "profiles", user.uid);
+    await setDoc(
+      profileRef,
       {
-        id: user.id,
         dob: data.dob,
         blood_group: data.bloodGroup,
         marital_status: data.maritalStatus,
@@ -49,64 +51,53 @@ export async function saveFullAssessment(data: AssessmentData): Promise<void> {
         weight: data.weight,
         updated_at: new Date().toISOString(),
       },
-      { onConflict: "id" },
+      { merge: true },
     );
 
-    if (profileError) {
-      if (profileError.code === "PGRST204") {
-        console.warn(
-          "Database schema mismatch: Ensure the 'profiles' table has columns: dob, blood_group, marital_status, occupation, height, weight.",
-        );
-      } else {
-        console.error("Profile update error:", profileError);
-      }
-    }
-
     // 2. Save assessment record
-    const { error: assessmentError } = await supabase
-      .from("assessments")
-      .insert([
-        {
-          user_id: user.id,
-          data: data,
-          timestamp: new Date().toISOString(),
-        },
-      ]);
-
-    if (assessmentError) throw assessmentError;
+    const newAssessmentRef = doc(collection(db, "assessments"));
+    await setDoc(newAssessmentRef, {
+      user_id: user.uid,
+      data: data,
+      timestamp: new Date().toISOString(),
+    });
   } catch (e) {
-    console.error("Failed to save full assessment to Supabase:", e);
+    console.error("Failed to save full assessment to Firestore:", e);
     throw e;
   }
 }
 
 export async function getScreenings(): Promise<ScreeningEntry[]> {
   try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = auth.currentUser;
     if (!user) return [];
 
-    const { data, error } = await supabase
-      .from("screenings")
-      .select("*")
-      .order("timestamp", { ascending: false });
+    const screeningsQuery = query(
+      collection(db, "screenings"),
+      where("user_id", "==", user.uid),
+      orderBy("timestamp", "desc"),
+    );
+    const querySnapshot = await getDocs(screeningsQuery);
 
-    if (error) throw error;
+    const screenings: ScreeningEntry[] = [];
+    querySnapshot.forEach((docSnap) => {
+      const row = docSnap.data();
+      screenings.push({
+        id: docSnap.id,
+        type: row.type,
+        condition: row.condition,
+        risk: row.risk,
+        confidence: row.confidence,
+        tests: row.tests,
+        imageUri: row.image_uri,
+        timestamp: row.timestamp,
+        answers: row.answers,
+      });
+    });
 
-    return (data || []).map((row) => ({
-      id: row.id,
-      type: row.type,
-      condition: row.condition,
-      risk: row.risk,
-      confidence: row.confidence,
-      tests: row.tests,
-      imageUri: row.image_uri,
-      timestamp: row.timestamp,
-      answers: row.answers,
-    }));
+    return screenings;
   } catch (e) {
-    console.error("Failed to load screenings from Supabase:", e);
+    console.error("Failed to load screenings from Firestore:", e);
     return [];
   }
 }
@@ -121,61 +112,47 @@ export async function saveDailyLog(
   value: number | boolean,
 ): Promise<void> {
   try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = auth.currentUser;
     if (!user) throw new Error("User not authenticated");
 
     const today = new Date().toISOString().split("T")[0];
+    const logId = `${user.uid}_${today}`;
+    const logRef = doc(db, "daily_logs", logId);
 
-    // Get existing logs for today to merge
-    const { data: existingLog } = await supabase
-      .from("daily_logs")
-      .select("data")
-      .eq("user_id", user.id)
-      .eq("date", today)
-      .single();
-
-    const currentData = existingLog?.data || {};
+    const docSnap = await getDoc(logRef);
+    const currentData = docSnap.exists() ? docSnap.data().data || {} : {};
     const newData = { ...currentData, [category]: value };
 
-    const { error } = await supabase.from("daily_logs").upsert(
+    await setDoc(
+      logRef,
       {
-        user_id: user.id,
+        user_id: user.uid,
         date: today,
         data: newData,
         updated_at: new Date().toISOString(),
       },
-      { onConflict: "user_id,date" },
+      { merge: true },
     );
-
-    if (error) throw error;
   } catch (e) {
-    console.error("Failed to save daily log to Supabase:", e);
+    console.error("Failed to save daily log to Firestore:", e);
   }
 }
 
 export async function getDailyLog(date?: string): Promise<Record<string, any>> {
   try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = auth.currentUser;
     if (!user) return {};
 
     const targetDate = date || new Date().toISOString().split("T")[0];
+    const logId = `${user.uid}_${targetDate}`;
+    const logRef = doc(db, "daily_logs", logId);
 
-    const { data, error } = await supabase
-      .from("daily_logs")
-      .select("data")
-      .eq("user_id", user.id)
-      .eq("date", targetDate)
-      .single();
+    const docSnap = await getDoc(logRef);
+    if (!docSnap.exists()) return {};
 
-    if (error && error.code !== "PGRST116") throw error;
-
-    return data?.data || {};
+    return docSnap.data().data || {};
   } catch (e) {
-    console.error("Failed to load daily log from Supabase:", e);
+    console.error("Failed to load daily log from Firestore:", e);
     return {};
   }
 }

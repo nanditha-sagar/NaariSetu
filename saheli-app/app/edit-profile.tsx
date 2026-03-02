@@ -14,7 +14,7 @@ import {
 import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { supabase } from "@/utils/supabase";
+import { auth } from "@/utils/firebase";
 import { authService, ProfileInput } from "@/services/authService";
 
 export default function EditProfileScreen() {
@@ -39,14 +39,12 @@ export default function EditProfileScreen() {
 
   const loadProfile = async () => {
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const user = auth.currentUser;
       if (!user) {
         router.replace("/login");
         return;
       }
-      const data = await authService.getProfile(user.id);
+      const data = await authService.getProfile(user.uid);
       if (data) {
         setProfile(data);
       }
@@ -66,14 +64,12 @@ export default function EditProfileScreen() {
 
     setSaving(true);
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const user = auth.currentUser;
       if (!user) throw new Error("Not authenticated");
 
       await authService.updateProfile({
         ...profile,
-        id: user.id,
+        id: user.uid,
       });
 
       if (Platform.OS === "web") {

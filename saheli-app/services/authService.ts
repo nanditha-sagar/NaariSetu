@@ -1,4 +1,6 @@
-import { supabase } from "@/utils/supabase";
+import { auth, db } from "../utils/firebase";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc, updateDoc, getDoc } from "firebase/firestore";
 
 export interface ProfileInput {
   id: string;
@@ -19,34 +21,26 @@ export interface ProfileInput {
 
 export const authService = {
   async signUp(email: string, password: string) {
-    const { data, error } = await supabase.auth.signUp({
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
       email,
       password,
-    });
-    if (error) throw error;
-    return data;
+    );
+    return { user: userCredential.user };
   },
 
   async createProfile(profile: ProfileInput) {
-    const { error } = await supabase.from("profiles").insert([profile]);
-    if (error) throw error;
+    await setDoc(doc(db, "profiles", profile.id), profile);
   },
 
   async updateProfile(profile: Partial<ProfileInput> & { id: string }) {
-    const { error } = await supabase
-      .from("profiles")
-      .update(profile)
-      .eq("id", profile.id);
-    if (error) throw error;
+    const { id, ...data } = profile;
+    await updateDoc(doc(db, "profiles", id), data);
   },
 
   async getProfile(id: string) {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", id)
-      .single();
-    if (error) throw error;
-    return data;
+    const docSnap = await getDoc(doc(db, "profiles", id));
+    if (!docSnap.exists()) throw new Error("Profile not found");
+    return docSnap.data() as ProfileInput;
   },
 };
