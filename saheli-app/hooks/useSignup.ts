@@ -36,7 +36,7 @@ export function useSignup() {
       if (!data.user) throw new Error("User not created");
 
       await authService.createProfile({
-        id: data.user.id,
+        id: data.user.uid,
         full_name: name,
         email: email,
         phone: phone,

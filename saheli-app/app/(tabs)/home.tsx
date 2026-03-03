@@ -155,9 +155,9 @@ export default function HomeScreen() {
             <Text className="text-2xl font-bold text-slate-900">
               {userProfile?.full_name || "Welcome Back"}
             </Text>
-            <Text className="text-slate-500 text-sm">
+            <Text className="text-slate-400 text-xs mt-1">
               {userProfile
-                ? `${userProfile.age || "--"} yrs ${userProfile.city || ""}`
+                ? `${userProfile.age || "--"} yrs • ${userProfile.city || "India"}`
                 : "Guest User"}
             </Text>
           </View>
@@ -169,51 +169,98 @@ export default function HomeScreen() {
               onPress={() => router.push("/notifications" as any)}
               className="relative"
             >
-              <View className="w-12 h-12 rounded-full bg-white items-center justify-center border border-slate-200">
+              <View className="w-11 h-11 rounded-full bg-white items-center justify-center border border-slate-100 shadow-sm">
                 <MaterialIcons
                   name="notifications-none"
-                  size={22}
+                  size={20}
                   color="#ec4899"
                 />
               </View>
 
               {/* Notification Dot */}
-              <View className="absolute top-1 right-1 w-3 h-3 bg-pink-500 rounded-full border-2 border-white" />
+              <View className="absolute top-0 right-0 w-2.5 h-2.5 bg-pink-500 rounded-full border-2 border-white" />
             </Pressable>
 
             {/* Profile Button */}
             <Pressable onPress={() => router.push("/(tabs)/profile")}>
-              <View className="w-12 h-12 rounded-full bg-primary-20 items-center justify-center border-2 border-white">
-                <MaterialIcons name="person" size={24} color="#f471b5" />
+              <View className="w-11 h-11 rounded-full bg-pink-50 items-center justify-center border border-pink-100">
+                <MaterialIcons name="person" size={22} color="#f471b5" />
               </View>
 
               {/* Online Dot */}
-              <View className="absolute bottom-0 right-0 w-3 h-3 bg-secondary rounded-full border-2 border-bg-light" />
+              <View className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-secondary rounded-full border-2 border-bg-light" />
             </Pressable>
           </View>
         </View>
 
-        {/* Start Screening CTA */}
-        <Pressable
-          onPress={() => router.push("/screening" as any)}
-          className="w-full bg-primary p-6 rounded-xl mb-8 items-center relative overflow-hidden active:opacity-90"
-        >
-          <View className="absolute top-0 right-0 w-32 h-32 bg-white-10 rounded-full -mr-10 -mt-10" />
-          <View className="bg-white-20 p-4 rounded-full mb-4">
-            <MaterialIcons name="fingerprint" size={40} color="white" />
+        {/* ─── Mood Check-in ─── */}
+        <View className="bg-white rounded-2xl p-5 border border-slate-100 mb-6">
+          <Text className="text-sm font-bold text-slate-800 mb-4">
+            How are you feeling today?
+          </Text>
+          <View className="flex-row justify-between">
+            {[
+              { label: "Happy", emoji: "😊", color: "#fef3c7" },
+              { label: "Neutral", emoji: "😐", color: "#f1f5f9" },
+              { label: "Angry", emoji: "😠", color: "#fee2e2" },
+              { label: "Sad", emoji: "😔", color: "#e0f2fe" },
+            ].map((mood) => (
+              <Pressable
+                key={mood.label}
+                onPress={() =>
+                  Alert.alert(
+                    "Mood Logged",
+                    `Glad you shared you feel ${mood.label}!`,
+                  )
+                }
+                className="items-center"
+              >
+                <View
+                  className="w-14 h-14 rounded-2xl items-center justify-center mb-1.5"
+                  style={{ backgroundColor: mood.color }}
+                >
+                  <Text className="text-2xl">{mood.emoji}</Text>
+                </View>
+                <Text className="text-[10px] font-medium text-slate-500 uppercase tracking-tighter">
+                  {mood.label}
+                </Text>
+              </Pressable>
+            ))}
           </View>
-          <Text className="text-xl font-semibold text-white mb-1">
-            Start New Screening
-          </Text>
-          <Text className="text-white-80 text-sm">
-            Scan your nails for an AI health check
-          </Text>
-          <View className="mt-6 flex-row items-center gap-2 bg-white-10 px-4 py-2 rounded-full">
-            <MaterialIcons name="auto-awesome" size={14} color="white" />
-            <Text className="text-white text-xs font-medium">
-              AI-Powered Analysis
+        </View>
+
+        {/* ─── Thought of the Day ─── */}
+        <View className="bg-pink-50/50 p-4 rounded-2xl mb-6 border border-pink-100/50">
+          <View className="flex-row items-center gap-2 mb-1">
+            <MaterialIcons name="lightbulb" size={16} color="#db2777" />
+            <Text className="text-[10px] font-bold text-pink-600 uppercase tracking-widest">
+              Thought of the Day
             </Text>
           </View>
+          <Text className="text-slate-700 text-sm italic leading-5">
+            "Your health is an investment, not an expense. Take it one step at a
+            time."
+          </Text>
+        </View>
+
+        {/* Start Screening CTA (Reduced Size) */}
+        <Pressable
+          onPress={() => router.push("/screening" as any)}
+          className="w-full bg-primary p-4 rounded-2xl mb-8 flex-row items-center relative overflow-hidden active:opacity-90"
+        >
+          <View className="absolute top-0 right-0 w-24 h-24 bg-white-10 rounded-full -mr-8 -mt-8" />
+          <View className="bg-white-20 p-3 rounded-full mr-4">
+            <MaterialIcons name="fingerprint" size={28} color="white" />
+          </View>
+          <View className="flex-1">
+            <Text className="text-lg font-semibold text-white">
+              Start New Screening
+            </Text>
+            <Text className="text-white-80 text-xs">
+              AI-powered nail scan for rapid assessment
+            </Text>
+          </View>
+          <MaterialIcons name="arrow-forward" size={20} color="white" />
         </Pressable>
 
         {/* Health Snapshot */}

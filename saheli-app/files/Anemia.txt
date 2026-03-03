@@ -1,0 +1,110 @@
+Phase 1: The Daily Check-In (Data Collection)
+The app should ask these questions. Some should be sliding scales (1-10) for trend tracking, and others should be "Yes/No" for red flag detection.
+
+A. The "Vitals" (Subjective)
+Energy Level: "How would you rate your fatigue today?" (1 = Bedridden/Exhausted, 10 = High Energy).
+
+Why: Fatigue is the primary marker of anemia.
+
+Breathlessness: "Did you feel short of breath today?"
+
+Options: No / Only during exercise / While walking or doing chores / While resting (Red Flag).
+
+Dizziness: "Have you felt dizzy or lightheaded?"
+
+Options: No / A little when standing up quickly / Constant dizziness / I fainted (Red Flag).
+
+B. Physical Signs
+Heart Rate Awareness: "Do you feel your heart beating fast or pounding (palpitations)?"
+
+Options: No / Occasionally / Yes, constantly.
+
+Pallor Check: "Does your skin, lips, or the inside of your lower eyelid look paler than usual?"
+
+Options: Normal / Slightly Pale / Very Pale (Ghostly).
+
+Cold Extremities: "Are your hands and feet unusually cold today?"
+
+Options: Yes / No.
+
+C. Women-Specific Factors (Crucial)
+Menstrual Cycle Status: "Are you currently on your period?"
+
+If Yes: "How is the flow?"
+
+Options: Light / Medium / Heavy / Very Heavy (Soaking a pad/tampon every hour - Red Flag).
+
+Pregnancy Status: (If applicable) "Any spotting or bleeding?" (Immediate Red Flag).
+
+D. Compliance & Other
+Stool Color: "Have you noticed black or tarry stools?"
+
+Why: This indicates internal gastrointestinal bleeding (Red Flag).
+
+Supplements: "Did you take your iron supplement today?"
+
+Phase 2: AI Logic & Triage (The "Brain")
+Your AI needs to categorize these inputs into three zones. Here is the logic I use in clinical practice:
+
+🟢 Zone 1: Stable (Green Alert)
+Conditions: Fatigue is manageable (4-10 score), no shortness of breath at rest, no dizziness, normal period flow.
+
+AI Interpretation: The anemia is managed.
+
+App Message: "You are doing well today. Keep up the good work."
+
+Suggestion: "Focus on maintaining your iron-rich diet. Try to include Vitamin C (like oranges) with your meals to boost absorption."
+
+🟡 Zone 2: Caution (Amber Alert)
+Conditions: Fatigue is worsening (trend down by 2+ points), shortness of breath during mild chores, occasional palpitations, or the period is heavier than usual but manageable.
+
+AI Interpretation: Hemoglobin might be dropping, or iron stores are depleting.
+
+App Message: "Your symptoms are flaring up. Take it easy today."
+
+Suggestion:
+
+Lifestyle: "Avoid strenuous exercise today. Prioritize sleep."
+
+Diet: "Ensure you take your iron supplement. Avoid coffee/tea/calcium immediately after the pill as they block absorption."
+
+Action: "If you feel dizzy, sit down immediately."
+
+🔴 Zone 3: Danger (Red Alert - Medical Intervention Needed)
+Conditions:
+
+Shortness of breath at rest.
+
+Chest pain (Angina due to lack of oxygen).
+
+Fainting or near-fainting (Syncope).
+
+Menorrhagia: Soaking through sanitary protection in less than an hour.
+
+Black/tarry stools.
+
+AI Interpretation: This is symptomatic severe anemia or acute blood loss. The heart is struggling to pump oxygen.
+
+App Message: "ALERT: Your symptoms indicate a need for medical assessment."
+
+Suggestion: "Please visit your doctor or closest clinic. Do not drive yourself if you are feeling dizzy."
+
+Phase 3: Trend Analysis (The AI's "Value Add")
+The AI shouldn't just look at today; it needs to look at the delta (change).
+
+The "Period Crash" Prediction:
+
+If the AI detects that the user's fatigue spikes and symptoms worsen every month during her cycle, it should predict this.
+
+Proactive Suggestion: "Your period is due in 2 days. Remember to be strict with your iron supplements and stock up on iron-rich foods now to prevent a crash."
+
+Medication Efficacy:
+
+If the user marks "Yes" to taking supplements for 3 weeks but symptoms (Fatigue scale) are not improving, the AI should flag this.
+
+Suggestion: "You've been consistent with meds, but symptoms aren't improving. You might need a different type of iron or an IV infusion. Discuss this report with your doctor."
+
+Important Engineering Note: The Disclaimer
+As an engineer, you must hard-code a disclaimer. The app is a tracker, not a diagnostic device.
+
+Example: "This analysis is based on your inputs and is for informational purposes only. It does not replace professional medical advice. In an emergency, call [Emergency Number]."

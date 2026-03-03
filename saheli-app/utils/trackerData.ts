@@ -16,9 +16,17 @@ export interface SymptomDef {
 
 export interface AnemiaLogEntry {
   date: string; // YYYY-MM-DD
-  symptoms: Record<string, Severity>;
-  ironFoodFrequency: "daily" | "sometimes" | "rarely" | "never";
-  supplementUsage: "yes" | "sometimes" | "no";
+  energyLevel: number; // 1-10
+  breathlessness: "none" | "exercise" | "chores" | "resting";
+  dizziness: "none" | "standing" | "constant" | "fainted";
+  heartRate: "none" | "occasionally" | "constantly";
+  pallor: "normal" | "slightly" | "very";
+  coldExtremities: boolean;
+  isOnPeriod: boolean;
+  periodFlow?: "light" | "medium" | "heavy" | "very_heavy";
+  pregnancySpotting?: boolean;
+  stoolColorBlack: boolean;
+  supplementUsage: "yes" | "no";
   hemoglobin?: number; // optional g/dL
   timestamp: string;
 }
@@ -26,6 +34,9 @@ export interface AnemiaLogEntry {
 export interface AnemiaInsights {
   riskScore: number; // 0–100
   riskLevel: "Low" | "Medium" | "High";
+  triageZone: "Green" | "Amber" | "Red";
+  triageMessage: string;
+  triageSuggestions: string[];
   trend: "Improving" | "Stable" | "Worsening" | "Not enough data";
   alerts: string[];
   weekAvg: number;
@@ -69,51 +80,37 @@ export const SUPPLEMENT_OPTIONS = [
 
 // ─── Risk Scoring ───
 export function computeDailyRiskScore(entry: AnemiaLogEntry): number {
-  let totalScore = 0;
-  let maxScore = 0;
+  let score = 0;
 
-  // Symptom scores (6 symptoms × max 3 = 18)
-  for (const symptom of ANEMIA_SYMPTOMS) {
-    const severity = entry.symptoms[symptom.id] || "none";
-    const opt = SEVERITY_OPTIONS.find((o) => o.value === severity);
-    totalScore += opt?.score || 0;
-    maxScore += 3;
-  }
+  // High weights for Red Flags
+  if (entry.breathlessness === "resting") score += 40;
+  if (entry.dizziness === "fainted") score += 40;
+  if (entry.periodFlow === "very_heavy") score += 40;
+  if (entry.stoolColorBlack) score += 40;
+  if (entry.pregnancySpotting) score += 50;
 
-  // Lifestyle scores
-  const foodOpt = FOOD_FREQUENCY_OPTIONS.find(
-    (o) => o.value === entry.ironFoodFrequency,
-  );
-  totalScore += foodOpt?.score || 0;
-  maxScore += 3;
+  // Medium weights
+  if (entry.breathlessness === "chores") score += 20;
+  if (entry.dizziness === "constant") score += 20;
+  if (entry.heartRate === "constantly") score += 20;
+  if (entry.pallor === "very") score += 20;
 
-  const suppOpt = SUPPLEMENT_OPTIONS.find(
-    (o) => o.value === entry.supplementUsage,
-  );
-  totalScore += suppOpt?.score || 0;
-  maxScore += 2;
+  // Low weights
+  if (entry.energyLevel <= 3) score += 15;
+  else if (entry.energyLevel <= 6) score += 10;
 
-  // Hemoglobin bonus (if provided)
-  if (entry.hemoglobin !== undefined) {
-    if (entry.hemoglobin < 7) {
-      totalScore += 4;
-      maxScore += 4;
-    } else if (entry.hemoglobin < 10) {
-      totalScore += 3;
-      maxScore += 4;
-    } else if (entry.hemoglobin < 12) {
-      totalScore += 1;
-      maxScore += 4;
-    } else {
-      maxScore += 4;
-    }
-  }
+  if (entry.breathlessness === "exercise") score += 5;
+  if (entry.dizziness === "standing") score += 5;
+  if (entry.heartRate === "occasionally") score += 5;
+  if (entry.pallor === "slightly") score += 5;
+  if (entry.coldExtremities) score += 5;
 
-  return maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
+  return Math.min(score, 100);
 }
 
 // ─── Insights Generation ───
 export function generateAnemiaInsights(logs: AnemiaLogEntry[]): AnemiaInsights {
+  const latestLog = logs[logs.length - 1];
   const today = new Date();
   const weekAgo = new Date(today);
   weekAgo.setDate(weekAgo.getDate() - 7);
@@ -125,7 +122,6 @@ export function generateAnemiaInsights(logs: AnemiaLogEntry[]): AnemiaInsights {
     (l) => new Date(l.date) >= twoWeeksAgo && new Date(l.date) < weekAgo,
   );
 
-  // Weekly averages
   const thisWeekScores = thisWeekLogs.map(computeDailyRiskScore);
   const prevWeekScores = prevWeekLogs.map(computeDailyRiskScore);
 
@@ -143,44 +139,85 @@ export function generateAnemiaInsights(logs: AnemiaLogEntry[]): AnemiaInsights {
       : 0;
 
   // Risk level
-  let riskLevel: "Low" | "Medium" | "High" = "Low";
+  let riskLevel: AnemiaInsights["riskLevel"] = "Low";
   if (weekAvg > 60) riskLevel = "High";
   else if (weekAvg > 30) riskLevel = "Medium";
 
-  // Trend
+  // Zone Logic (Phase 2)
+  let triageZone: AnemiaInsights["triageZone"] = "Green";
+  let triageMessage = "You are doing well today. Keep up the good work.";
+  let triageSuggestions = [
+    "Focus on maintaining your iron-rich diet.",
+    "Try to include Vitamin C (like oranges) with your meals to boost absorption.",
+  ];
+
+  if (latestLog) {
+    // Red Flags
+    const hasRedFlag =
+      latestLog.breathlessness === "resting" ||
+      latestLog.dizziness === "fainted" ||
+      latestLog.periodFlow === "very_heavy" ||
+      latestLog.stoolColorBlack ||
+      latestLog.pregnancySpotting;
+
+    if (hasRedFlag) {
+      triageZone = "Red";
+      triageMessage =
+        "ALERT: Your symptoms indicate a need for medical assessment.";
+      triageSuggestions = [
+        "Please visit your doctor or closest clinic.",
+        "Do not drive yourself if you are feeling dizzy.",
+      ];
+    } else if (
+      latestLog.energyLevel <= 5 ||
+      latestLog.breathlessness === "chores" ||
+      latestLog.heartRate === "constantly" ||
+      latestLog.periodFlow === "heavy"
+    ) {
+      triageZone = "Amber";
+      triageMessage = "Your symptoms are flaring up. Take it easy today.";
+      triageSuggestions = [
+        "Avoid strenuous exercise today. Prioritize sleep.",
+        "Ensure you take your iron supplement. Avoid coffee/tea/calcium immediately after the pill.",
+        "If you feel dizzy, sit down immediately.",
+      ];
+    }
+  }
+
+  // Trend (Phase 3)
   let trend: AnemiaInsights["trend"] = "Not enough data";
   if (thisWeekScores.length >= 2 && prevWeekScores.length >= 2) {
     const diff = weekAvg - prevWeekAvg;
     if (diff < -5) trend = "Improving";
     else if (diff > 5) trend = "Worsening";
     else trend = "Stable";
-  } else if (thisWeekScores.length >= 3) {
-    trend = "Stable";
   }
 
-  // Alerts
   const alerts: string[] = [];
-  if (riskLevel === "High") {
-    alerts.push("Your anemia risk is elevated. Consider consulting a doctor.");
-  }
-  if (trend === "Worsening") {
-    alerts.push("Symptoms are worsening compared to last week.");
+  if (triageZone === "Red")
+    alerts.push("Immediate medical attention recommended based on red flags.");
+
+  // Period Crash Prediction
+  if (
+    latestLog?.isOnPeriod &&
+    (latestLog.energyLevel < 5 || latestLog.breathlessness !== "none")
+  ) {
+    alerts.push(
+      "Detected cycle-related fatigue spike. Proactive rest recommended.",
+    );
   }
 
-  // Check for persistent severe symptoms
-  const latestLog = thisWeekLogs[thisWeekLogs.length - 1];
-  if (latestLog) {
-    const severeCount = Object.values(latestLog.symptoms).filter(
-      (s) => s === "severe",
-    ).length;
-    if (severeCount >= 3) {
-      alerts.push(
-        "Multiple severe symptoms detected. Please seek medical attention.",
-      );
-    }
-  }
-
-  return { riskScore: weekAvg, riskLevel, trend, alerts, weekAvg, prevWeekAvg };
+  return {
+    riskScore: latestLog ? computeDailyRiskScore(latestLog) : 0,
+    riskLevel,
+    triageZone,
+    triageMessage,
+    triageSuggestions,
+    trend,
+    alerts,
+    weekAvg,
+    prevWeekAvg,
+  };
 }
 
 // ─── Storage Helpers ───

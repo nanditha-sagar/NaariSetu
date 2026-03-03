@@ -1,0 +1,142 @@
+Phase 1: The Daily Check-In (Data Collection)
+The AI needs to enforce a protocol before the user even enters data.
+
+A. The "Vitals" (The Hard Data)
+The user must input their reading from their home BP monitor.
+
+Systolic (Top number): [Input Field]
+
+Diastolic (Bottom number): [Input Field]
+
+Pulse Rate: [Input Field]
+
+Doctor's Note: The AI should ask: "Did you sit quietly for 5 minutes before measuring?" (If No, the AI should suggest resting and re-measuring for accuracy).
+
+Shutterstock
+Explore
+
+B. The "Red Flag" Symptom Check
+If the numbers are high, or even if they are normal, ask these questions to detect target organ damage.
+
+Headache: "Do you have a headache today?"
+
+Options: No / Mild / Severe & Throbbing (Red Flag) / Thunderclap (Emergency).
+
+Vision Changes: "Is your vision normal?"
+
+Options: Yes / Blurry / I see spots or 'floaters' (Red Flag).
+
+Chest & Breathing: "Any discomfort in the chest or trouble breathing?"
+
+Options: No / Shortness of breath / Chest pain or tightness (Emergency).
+
+Neurological: "Do you feel any weakness on one side of the body or difficulty speaking?"
+
+Options: No / Yes (Stroke Alert - Emergency).
+
+C. Contextual Factors
+Salt Intake: "Did you consume a high-salt meal yesterday or today?" (Fast food, pickles, processed meat).
+
+Medication: "Did you take your BP medication today?"
+
+Stress Level: "Rate your stress today (1-10)."
+
+Phase 2: AI Logic & Triage (The "Brain")
+This logic combines the Numbers (JNC-8/AHA Guidelines) with the Symptoms.
+
+🟢 Zone 1: Optimal / Normal
+Reading: Systolic < 120 AND Diastolic < 80.
+
+Symptoms: None.
+
+AI Interpretation: Cardiovascular system is under low stress.
+
+App Suggestion: "Perfect reading. Maintain your current lifestyle."
+
+Tip: "Great job. Keep your sodium intake low to stay in this zone."
+
+
+Shutterstock
+🟡 Zone 2: Elevated / Stage 1 (The "Warning Zone")
+Reading: Systolic 130–139 OR Diastolic 80–89.
+
+Symptoms: None or mild headache.
+
+AI Interpretation: The arteries are under pressure. If this persists, it damages blood vessels.
+
+App Suggestion: "Your BP is slightly elevated today."
+
+Action: "Check your salt intake. Have you been stressed? Try a 10-minute deep breathing session."
+
+Logic: If this persists for >7 days, the App prompts: "Your trends are consistently elevated. Please consult your doctor about adjusting your dosage."
+
+🟠 Zone 3: Stage 2 Hypertension (High Risk)
+Reading: Systolic ≥ 140 OR Diastolic ≥ 90.
+
+Symptoms: None.
+
+AI Interpretation: Dangerous if left untreated long-term.
+
+App Suggestion: "Your blood pressure is high."
+
+Action: "Did you miss your medication? Please sit in a quiet room for 15 minutes and re-measure."
+
+Alert: If the re-measure is still high, "Contact your healthcare provider today."
+
+🔴 Zone 4: Hypertensive Crisis (Medical Emergency)
+Reading: Systolic > 180 and/or Diastolic > 120.
+
+Symptoms: ANY symptom (Chest pain, severe headache, confusion, vision change).
+
+AI Interpretation: Immediate risk of Stroke or Heart Attack.
+
+App Message: "CRITICAL ALERT: SEEK EMERGENCY CARE."
+
+Display: A giant red button to call Emergency Services or a designated Emergency Contact.
+
+Instruction: "Do not drive yourself to the hospital."
+
+Phase 3: Specialized Women's Health Features
+Since you mentioned specializing in women patients, your app needs two distinct modes that generic apps often miss:
+
+1. The "Preeclampsia" Mode (Pregnancy)
+If the user profile says she is pregnant, the AI thresholds change.
+
+The Nuance: A BP of 140/90 in a normal person is "Stage 2." In a pregnant woman, it is a potential emergency (Preeclampsia) that threatens both mother and baby.
+
+Additional Question: "Do you have swelling in your face or hands? Is there pain in your upper right belly?"
+
+AI Action: If BP > 140/90 + Swelling = Immediate ER referral.
+
+2. The "Hypotension" Mode (Low BP)
+Young women often suffer from Low BP (e.g., 90/60), causing fainting.
+
+Trigger: Systolic < 90 OR Diastolic < 60.
+
+Questions: "Do you feel dizzy? Did you faint?"
+
+Suggestion: "Drink 500ml of water immediately. Add a pinch of salt to your next meal. Lie down with your legs raised to help blood flow to the brain."
+
+Phase 4: Pattern Recognition (The Engineer's Edge)
+The AI should identify these specific patterns:
+
+"White Coat" Filtering:
+
+If the user logs "High" at the doctor's office but "Normal" at home consistently, the App notes: "You may have White Coat Hypertension. Show this log to your doctor."
+
+Morning Surge:
+
+If BP is consistently high only in the morning (6 AM - 10 AM), this is a risk factor for morning strokes. The App should suggest: "Ask your doctor if you should take your medication at night instead of the morning."
+
+Salt Sensitivity:
+
+If the user marks "High Salt" on Saturday and BP spikes on Sunday, the AI learns: "Your body is highly salt-sensitive. Pizza seems to trigger your BP spikes."
+
+Summary for the App Developer
+Input: 3 numbers (Sys/Dia/Pulse) + 5-6 Yes/No symptom toggles.
+
+Output: Color-coded status (Green/Yellow/Red).
+
+Critical Feature: Differentiate between "High BP" (Chronic issue) and "Crisis" (Immediate danger).
+
+Disclaimer: "This app tracks trends. It is not a substitute for clinical judgment."

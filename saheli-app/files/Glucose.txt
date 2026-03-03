@@ -1,0 +1,159 @@
+Phase 1: The Daily Check-In (Data Collection)
+Context is everything. A blood sugar of 140 mg/dL is perfect after a meal, but high if you haven't eaten all day. The AI must ask "When?" before analyzing "How much?"
+
+A. The "Vitals" (The Numbers)
+Glucose Reading: [Numeric Input] (Support mg/dL and mmol/L).
+
+Timing Tag (The User MUST select one):
+
+Fasting (Just woke up).
+
+Pre-Meal (Before eating).
+
+Post-Meal (1-2 hours after eating).
+
+Bedtime.
+
+B. The "Red Flag" Symptom Check
+Ask these questions to categorize the danger level.
+
+Hypoglycemia (Low Sugar) Symptoms:
+3.  "Do you feel shaky, sweaty, or have a racing heart?"
+4.  "Are you feeling suddenly intensely hungry or irritable ('Hangry')?"
+5.  "Do you feel confused or lightheaded?" (Red Flag: Brain is starving).
+
+Hyperglycemia (High Sugar) Symptoms:
+6.  "Are you thirstier than usual (Polydipsia)?"
+7.  "Are you urinating frequently (Polyuria)?"
+8.  "Is your vision blurry?"
+9.  "Do you feel nauseous or have stomach pain?" (Red Flag: DKA risk).
+
+C. Contextual Factors
+Carb Intake: "Did you have a heavy meal (pasta, rice, sweets) recently?"
+
+Activity: "Did you exercise today?" (Exercise usually lowers blood sugar).
+
+Insulin/Meds: "Did you take your dose?"
+
+Phase 2: AI Logic & Triage (The "Brain")
+Note: These ranges vary slightly by patient, but these are standard clinical safety zones.
+
+🔴 Zone 1: Hypoglycemia (THE DANGER ZONE)
+Reading: < 70 mg/dL (< 3.9 mmol/L).
+
+Symptoms: Shaking, sweating, confusion.
+
+AI Interpretation: Immediate Medical Emergency. The brain lacks fuel.
+
+App Action: FLASHING RED ALERT.
+
+Immediate Suggestion: "Your sugar is dangerously low. Rule of 15:"
+
+Eat 15g of fast-acting carbs (4 oz juice, 1 tbsp honey, or 3-4 glucose tablets).
+
+Wait 15 minutes.
+
+Re-check. If still low, repeat.
+
+If < 55 mg/dL: "Call for help immediately or use your Glucagon kit if you have one."
+
+🟢 Zone 2: Target Range (Safe)
+Fasting/Pre-Meal: 80 – 130 mg/dL.
+
+Post-Meal (2 hrs): < 180 mg/dL.
+
+AI Interpretation: Excellent control.
+
+App Message: "You are in the green zone."
+
+Suggestion: "Keep up the good work. Logging this helps your doctor see your stability."
+
+🟡 Zone 3: Elevated (Warning)
+Reading: 180 – 250 mg/dL.
+
+AI Interpretation: Insulin resistance is high, or medication was missed/insufficient for the meal eaten.
+
+App Message: "Your sugar is running high."
+
+Suggestion:
+
+"Drink a large glass of water to help flush out excess sugar."
+
+"If you feel well, take a 15-minute gentle walk to lower levels naturally."
+
+"Review your last meal—was it high in hidden sugars?"
+
+🟠 Zone 4: Severe Hyperglycemia (Ketosis Risk)
+Reading: > 250 mg/dL (on two consecutive readings).
+
+Symptoms: Nausea, fruit-smelling breath, extreme thirst.
+
+AI Interpretation: Risk of Diabetic Ketoacidosis (DKA), a life-threatening condition where blood turns acidic.
+
+App Message: "WARNING: HIGH RISK."
+
+Suggestion:
+
+"Check for Ketones (urine strip) immediately if you have Type 1 Diabetes."
+
+"Do NOT exercise (this can spike sugar further if ketones are present)."
+
+"Contact your doctor."
+
+Phase 3: Women's Specific Features (Crucial)
+Women with diabetes face unique challenges due to hormones.
+
+1. The "Luteal Phase" Spike (Premenstrual)
+The Science: Progesterone peaks the week before a period. Progesterone causes insulin resistance.
+
+The AI Logic: If the user logs "Period starting in 3 days," the AI should expect higher blood sugar numbers (e.g., fasting 110-120 instead of 90).
+
+Suggestion: "You are in the pre-menstrual phase. Your blood sugar may run higher than usual regardless of diet. Be patient with yourself, and ask your doctor if you need a temporary insulin increase."
+
+2. PCOS (Polycystic Ovary Syndrome) Mode
+Many women have both Diabetes and PCOS.
+
+The AI Logic: Tracks weight and sugar together.
+
+Suggestion: "Focus on protein and healthy fats. Insulin resistance is higher with PCOS, so 'carb counting' is critical."
+
+3. Gestational Diabetes (Pregnancy Mode)
+The Targets Change: The limits are MUCH stricter to protect the baby.
+
+Fasting > 95 mg/dL is considered HIGH (vs 130 in non-pregnant).
+
+1-hour post-meal > 140 mg/dL is HIGH.
+
+AI Action: If the user toggles "Pregnant," the App checks against these stricter thresholds.
+
+Suggestion: "High sugar crosses the placenta. Stick to the diet plan rigidly for the baby's safety."
+
+Phase 4: Pattern Recognition (The AI's Value Add)
+The App should look for these three common diabetic phenomena:
+
+The "Dawn Phenomenon":
+
+Pattern: Sugar is normal at bedtime but High (e.g., 160) immediately upon waking up, without eating.
+
+AI Insight: "Your liver is dumping sugar while you sleep. Discuss this morning spike with your doctor; you might need a medication adjustment."
+
+The "Somogyi Effect" (Rebound):
+
+Pattern: User has a Low (Hypo) at 3 AM, followed by a High (Hyper) at 7 AM.
+
+AI Insight: "Your body panicked from the low sugar overnight and overcompensated. You might be taking too much evening insulin or need a bedtime snack."
+
+The "Pizza Effect" (Delayed Spike):
+
+Pattern: User eats pizza/burgers. Sugar is fine 1 hour later, but spikes dangerously 4-5 hours later.
+
+AI Insight: "High fat foods delay sugar absorption. Next time, check your sugar 4 hours after a heavy meal, not just 2."
+
+Summary for the App Developer
+Input: Glucose Number + TIMING (Fast/Post-meal).
+
+Alerts: LOW SUGAR is the loudest, most urgent alert.
+
+Women's Health: correlate spikes with the menstrual cycle.
+
+Disclaimer: "This app tracks trends. Adjusting insulin based solely on an app without doctor input is dangerous."
