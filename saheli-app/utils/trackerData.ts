@@ -91,32 +91,51 @@ export interface BPInsights {
 }
 
 // ─── Glucose Types ───
+export type GlucoseTiming =
+  | "fasting"
+  | "before_meal"
+  | "after_meal_1h"
+  | "after_meal_2h"
+  | "random";
+export type GlucoseSource = "glucometer" | "lab" | "cgm";
+
 export interface GlucoseLogEntry {
-  date: string;
+  date: string; // YYYY-MM-DD
+  time: string; // HH:mm
   value: number; // mg/dL
-  unit: "mg/dL" | "mmol/L";
-  timing: "fasting" | "pre_meal" | "post_meal" | "bedtime";
-  hypoSymptoms: ("shaky" | "sweaty" | "heart_racing" | "hungry" | "confused")[];
-  hyperSymptoms: (
-    | "thirsty"
-    | "frequent_urination"
-    | "blurry_vision"
-    | "nausea"
-    | "stomach_pain"
-  )[];
-  carbIntake: "low" | "medium" | "heavy";
-  exercise: boolean;
-  tookMeds: boolean;
+  unit: "mg/dL";
+  timing: GlucoseTiming;
+  source: GlucoseSource;
+
+  // CGM Specific (Auto)
+  isCGM?: boolean;
+  avgGlucose?: number;
+  trend?: "up" | "down" | "stable";
+  timeInRange?: number; // percentage
+
+  // Optional
+  symptoms: string[];
+  insulinMedication: boolean;
+  mealType?: string;
+  activity: boolean;
+  notes?: string;
+
+  // Women Factors
+  cyclePhase?: string;
+  stressLevel?: "low" | "medium" | "high";
   isPregnant: boolean;
-  isLutealPhase?: boolean; // Premenstrual spike
+  hasPCOS: boolean;
+
   timestamp: string;
 }
 
 export interface GlucoseInsights {
-  triageZone: "Green" | "Yellow" | "Orange" | "Red";
+  category: "Normal" | "Prediabetes" | "Diabetes" | "Emergency";
+  alertStatus: "Green" | "Amber" | "Red" | "Crisis";
+  triageZone: "Green" | "Amber" | "Red";
   triageMessage: string;
   triageSuggestions: string[];
-  riskLevel: "Low" | "Target" | "Elevated" | "High Risk";
+  trend: "up" | "down" | "stable" | "none";
 }
 
 // ─── Skin Types ───
@@ -272,11 +291,11 @@ export const SEVERITY_OPTIONS: {
   score: number;
   color: string;
 }[] = [
-  { value: "none", label: "None", score: 0, color: "#10b981" },
-  { value: "mild", label: "Mild", score: 1, color: "#f59e0b" },
-  { value: "moderate", label: "Moderate", score: 2, color: "#f97316" },
-  { value: "severe", label: "Severe", score: 3, color: "#ef4444" },
-];
+    { value: "none", label: "None", score: 0, color: "#10b981" },
+    { value: "mild", label: "Mild", score: 1, color: "#f59e0b" },
+    { value: "moderate", label: "Moderate", score: 2, color: "#f97316" },
+    { value: "severe", label: "Severe", score: 3, color: "#ef4444" },
+  ];
 
 export const FOOD_FREQUENCY_OPTIONS = [
   { value: "daily", label: "Daily", score: 0 },
@@ -341,14 +360,14 @@ export function generateAnemiaInsights(logs: AnemiaLogEntry[]): AnemiaInsights {
   const weekAvg =
     thisWeekScores.length > 0
       ? Math.round(
-          thisWeekScores.reduce((a, b) => a + b, 0) / thisWeekScores.length,
-        )
+        thisWeekScores.reduce((a, b) => a + b, 0) / thisWeekScores.length,
+      )
       : 0;
   const prevWeekAvg =
     prevWeekScores.length > 0
       ? Math.round(
-          prevWeekScores.reduce((a, b) => a + b, 0) / prevWeekScores.length,
-        )
+        prevWeekScores.reduce((a, b) => a + b, 0) / prevWeekScores.length,
+      )
       : 0;
 
   // Risk level
@@ -619,81 +638,81 @@ export function generateGlucoseInsights(
   entry: GlucoseLogEntry,
 ): GlucoseInsights {
   const val = entry.value;
-  const isPregnant = entry.isPregnant;
+  const timing = entry.timing;
 
-  // Crisis: Hypoglycemia
+  let category: GlucoseInsights["category"] = "Normal";
+  let alertStatus: GlucoseInsights["alertStatus"] = "Green";
+  let triageMessage = "Your glucose levels are within a healthy range.";
+  let triageSuggestions: string[] = ["Keep maintaining your routine."];
+
+  // Emergency Checks
   if (val < 70) {
-    return {
-      triageZone: "Red",
-      riskLevel: "Low",
-      triageMessage:
-        "FLASHING RED ALERT: Your sugar is dangerously low (Hypoglycemia).",
-      triageSuggestions: [
-        "Rule of 15: Eat 15g fast-acting carbs (juice/honey).",
-        "Wait 15 mins and re-check.",
-        val < 55
-          ? "CRITICAL: Call for help immediately or use Glucagon kit."
-          : "If still low, repeat Rule of 15.",
-      ],
-    };
+    category = "Emergency";
+    alertStatus = "Crisis";
+    triageMessage = "Low blood sugar detected (Hypoglycemia).";
+    triageSuggestions = [
+      "Rule of 15: Eat 15g fast carbs (juice/honey).",
+      "Wait 15 mins and recheck.",
+      "If still <70, repeat.",
+    ];
+  } else if (val > 300) {
+    category = "Emergency";
+    alertStatus = "Crisis";
+    triageMessage = "Critical high blood sugar level.";
+    triageSuggestions = [
+      "🚨 Consult a doctor immediately.",
+      "Drink plenty of water.",
+      "Check for ketones if recommended by your doctor.",
+    ];
+  }
+  // Diagnostic Ranges
+  else if (timing === "fasting") {
+    if (val >= 126) {
+      category = "Diabetes";
+      alertStatus = "Red";
+      triageMessage = "Fasting glucose is in the diabetes range.";
+      triageSuggestions = ["Discuss these readings with your doctor."];
+    } else if (val >= 100) {
+      category = "Prediabetes";
+      alertStatus = "Amber";
+      triageMessage = "Fasting glucose is in the prediabetes range.";
+      triageSuggestions = ["Monitor sugar intake and consistency."];
+    }
+  } else if (timing === "after_meal_2h") {
+    if (val >= 200) {
+      category = "Diabetes";
+      alertStatus = "Red";
+      triageMessage = "Post-meal glucose is in the diabetes range.";
+      triageSuggestions = ["High readings after meals need medical review."];
+    } else if (val >= 140) {
+      category = "Prediabetes";
+      alertStatus = "Amber";
+      triageMessage = "Post-meal glucose is in the prediabetes range.";
+      triageSuggestions = ["Consider walk after meals to lower spike."];
+    }
+  } else if (val >= 200) {
+    // Random or 1h post-meal
+    category = "Diabetes";
+    alertStatus = "Red";
+    triageMessage = "High glucose level detected.";
+    triageSuggestions = ["Water, walk, and check medications."];
   }
 
-  // Severe Hyperglycemia / Ketosis Risk
-  if (val > 250) {
-    const hasDKA =
-      entry.hyperSymptoms.includes("nausea") ||
-      entry.hyperSymptoms.includes("stomach_pain");
-    return {
-      triageZone: "Red",
-      riskLevel: "High Risk",
-      triageMessage: "WARNING: High risk of Diabetic Ketoacidosis (DKA).",
-      triageSuggestions: [
-        "Contact your doctor immediately.",
-        "Check for Ketones if you have Type 1 Diabetes.",
-        "Do NOT exercise as this can spike sugar further.",
-      ],
-    };
+  // Women specific suggestions
+  if (entry.hasPCOS && (category === "Prediabetes" || category === "Diabetes")) {
+    triageSuggestions.push("PCOS can increase insulin resistance.");
   }
-
-  // Target Ranges
-  let isHigh = false;
-  if (isPregnant) {
-    if (entry.timing === "fasting" && val > 95) isHigh = true;
-    if (entry.timing === "post_meal" && val > 140) isHigh = true;
-  } else {
-    if (
-      (entry.timing === "fasting" || entry.timing === "pre_meal") &&
-      val > 130
-    )
-      isHigh = true;
-    if (entry.timing === "post_meal" && val > 180) isHigh = true;
-  }
-
-  if (isHigh) {
-    return {
-      triageZone: "Orange",
-      riskLevel: "Elevated",
-      triageMessage: "Your sugar is running high.",
-      triageSuggestions: [
-        "Drink a large glass of water.",
-        "Take a 15-minute gentle walk if you feel well.",
-        isPregnant
-          ? "Strictly follow your pregnancy diet plan for the baby's safety."
-          : "Review your last meal for hidden sugars.",
-      ],
-    };
+  if (entry.isPregnant && alertStatus !== "Green") {
+    triageSuggestions.push("Monitor closely for gestational health.");
   }
 
   return {
-    triageZone: "Green",
-    riskLevel: "Target",
-    triageMessage: "Excellent control. You are in the target range.",
-    triageSuggestions: [
-      "Keep up the good work.",
-      entry.isLutealPhase
-        ? "Progesterone may cause insulin resistance; patience is key."
-        : "Logging helps your doctor see your stability.",
-    ],
+    category,
+    alertStatus,
+    triageZone: alertStatus === "Crisis" ? "Red" : alertStatus === "Red" ? "Red" : alertStatus === "Amber" ? "Amber" : "Green",
+    triageMessage,
+    triageSuggestions,
+    trend: entry.trend || "none",
   };
 }
 
@@ -750,10 +769,10 @@ export function generateMoodInsights(
   const weeklyAvg =
     weekLogs.length > 0
       ? Number(
-          (
-            weekLogs.reduce((acc, l) => acc + l.valence, 0) / weekLogs.length
-          ).toFixed(1),
-        )
+        (
+          weekLogs.reduce((acc, l) => acc + l.valence, 0) / weekLogs.length
+        ).toFixed(1),
+      )
       : entry.valence;
 
   const moodCounts: Record<number, number> = {};

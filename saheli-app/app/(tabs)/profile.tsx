@@ -84,6 +84,11 @@ export default function ProfileScreen() {
             <Text className="text-slate-500 text-sm">
               {profile?.email || "User Email"}
             </Text>
+            {profile?.dob && (
+              <Text className="text-slate-500 text-xs mt-1">
+                DOB: {profile.dob}
+              </Text>
+            )}
             <Pressable
               onPress={() => router.push("/edit-profile")}
               className="mt-2 bg-pink-50 self-start px-3 py-1 rounded-full"

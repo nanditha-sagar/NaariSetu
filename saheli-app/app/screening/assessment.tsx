@@ -4,6 +4,7 @@ import {
   Text,
   ScrollView,
   Pressable,
+  TextInput,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
@@ -117,26 +118,46 @@ export default function AssessmentScreen() {
             <View className="pb-24">
               {/* <SectionHeader icon="person" title="Basic Information" /> */}
 
-              <SectionHeader icon="calendar-today" title="Date of Birth" />
-              <Pressable
-                onPress={() => setShowDOBPicker(true)}
-                className="flex-row items-center bg-primary/5 border border-primary/20 rounded-2xl px-4 py-3 h-14"
-              >
-                <MaterialIcons
-                  name="cake"
-                  size={20}
-                  color="#f4256a"
-                  style={{ marginRight: 10 }}
-                />
-                <Text className="text-slate-900 text-base font-medium">
-                  {formData.dob.toLocaleDateString("en-US", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </Text>
-              </Pressable>
-              {showDOBPicker && (
+              {Platform.OS === "web" && (
+                <View className="mt-2">
+                  <Text className="text-slate-700 font-bold mb-2 ml-1 text-sm">
+                    Select DOB
+                  </Text>
+                  <TextInput
+                    // @ts-ignore
+                    type="date"
+                    className="flex-row items-center bg-primary/5 border border-primary/20 rounded-2xl px-4 py-3 h-14 text-slate-900 text-base font-medium"
+                    value={formData.dob.toISOString().split("T")[0]}
+                    onChange={(e: any) => {
+                      const date = new Date(e.target.value);
+                      if (!isNaN(date.getTime())) {
+                        updateField("dob", date);
+                      }
+                    }}
+                  />
+                </View>
+              )}
+              {Platform.OS !== "web" && (
+                <Pressable
+                  onPress={() => setShowDOBPicker(true)}
+                  className="flex-row items-center bg-primary/5 border border-primary/20 rounded-2xl px-4 py-3 h-14"
+                >
+                  <MaterialIcons
+                    name="cake"
+                    size={20}
+                    color="#f4256a"
+                    style={{ marginRight: 10 }}
+                  />
+                  <Text className="text-slate-900 text-base font-medium">
+                    {formData.dob.toLocaleDateString("en-US", {
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </Text>
+                </Pressable>
+              )}
+              {Platform.OS !== "web" && showDOBPicker && (
                 <DateTimePicker
                   value={formData.dob}
                   mode="date"
@@ -578,26 +599,46 @@ export default function AssessmentScreen() {
             </View>
           ) : (
             <View className="pb-24">
-              <SectionHeader icon="calendar-today" title="Menstrual Start" />
-              <Pressable
-                onPress={() => setShowDatePicker(true)}
-                className="flex-row items-center bg-primary/5 border border-primary/20 rounded-2xl px-4 py-3 h-14"
-              >
-                <MaterialIcons
-                  name="calendar-today"
-                  size={20}
-                  color="#f4256a"
-                  style={{ marginRight: 10 }}
-                />
-                <Text className="text-slate-900 text-base font-medium">
-                  {formData.lastPeriodDate.toLocaleDateString("en-US", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </Text>
-              </Pressable>
-              {showDatePicker && (
+              {Platform.OS === "web" && (
+                <View className="mt-2">
+                  <Text className="text-slate-700 font-bold mb-2 ml-1 text-sm">
+                    Select Last Period Date
+                  </Text>
+                  <TextInput
+                    // @ts-ignore
+                    type="date"
+                    className="flex-row items-center bg-primary/5 border border-primary/20 rounded-2xl px-4 py-3 h-14 text-slate-900 text-base font-medium"
+                    value={formData.lastPeriodDate.toISOString().split("T")[0]}
+                    onChange={(e: any) => {
+                      const date = new Date(e.target.value);
+                      if (!isNaN(date.getTime())) {
+                        updateField("lastPeriodDate", date);
+                      }
+                    }}
+                  />
+                </View>
+              )}
+              {Platform.OS !== "web" && (
+                <Pressable
+                  onPress={() => setShowDatePicker(true)}
+                  className="flex-row items-center bg-primary/5 border border-primary/20 rounded-2xl px-4 py-3 h-14"
+                >
+                  <MaterialIcons
+                    name="calendar-today"
+                    size={20}
+                    color="#f4256a"
+                    style={{ marginRight: 10 }}
+                  />
+                  <Text className="text-slate-900 text-base font-medium">
+                    {formData.lastPeriodDate.toLocaleDateString("en-US", {
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </Text>
+                </Pressable>
+              )}
+              {Platform.OS !== "web" && showDatePicker && (
                 <DateTimePicker
                   value={formData.lastPeriodDate}
                   mode="date"

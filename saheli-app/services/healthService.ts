@@ -252,3 +252,66 @@ export async function getBPReadings(): Promise<BPReading[]> {
     return [];
   }
 }
+
+// ─── Glucose Firestore CRUD ───
+
+export interface GlucoseReading {
+  id?: string;
+  userId: string;
+  value: number;
+  timing: "fasting" | "before_meal" | "after_meal_1h" | "after_meal_2h" | "random";
+  source: "glucometer" | "lab" | "cgm";
+  symptoms: string[];
+  insulinMedication: boolean;
+  mealType?: string;
+  activity: boolean;
+  notes: string;
+  isPregnant: boolean;
+  hasPCOS: boolean;
+  stressLevel: "low" | "medium" | "high";
+  category: string;
+  alertStatus: "Green" | "Amber" | "Red" | "Crisis";
+  timestamp: string; // ISO String
+}
+
+export async function saveGlucoseReading(
+  reading: Omit<GlucoseReading, "userId">,
+): Promise<void> {
+  try {
+    const user = auth.currentUser;
+    if (!user) throw new Error("User not authenticated");
+
+    const newReadingRef = doc(collection(db, "glucose"));
+    await setDoc(newReadingRef, {
+      ...reading,
+      userId: user.uid,
+    });
+  } catch (e) {
+    console.error("Failed to save Glucose reading to Firestore:", e);
+    throw e;
+  }
+}
+
+export async function getGlucoseReadings(): Promise<GlucoseReading[]> {
+  try {
+    const user = auth.currentUser;
+    if (!user) return [];
+
+    const glucoseQuery = query(
+      collection(db, "glucose"),
+      where("userId", "==", user.uid),
+      orderBy("timestamp", "desc"),
+    );
+    const querySnapshot = await getDocs(glucoseQuery);
+
+    const readings: GlucoseReading[] = [];
+    querySnapshot.forEach((docSnap) => {
+      readings.push({ id: docSnap.id, ...docSnap.data() } as GlucoseReading);
+    });
+
+    return readings;
+  } catch (e) {
+    console.error("Failed to load Glucose readings from Firestore:", e);
+    return [];
+  }
+}

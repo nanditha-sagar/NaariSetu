@@ -44,6 +44,7 @@ export default function PeriodTrackerScreen() {
   const [notes, setNotes] = useState<string>("");
 
   const [insights, setInsights] = useState<PeriodInsights | null>(null);
+  const [hasLoggedToday, setHasLoggedToday] = useState<boolean>(false);
 
   const loadData = useCallback(async () => {
     const logs = await getPeriodLogs();
@@ -66,6 +67,9 @@ export default function PeriodTrackerScreen() {
       setIrregularCycle(todayLog.additionalData.irregularCycle);
       setMissedPeriod(todayLog.additionalData.missedPeriod);
       setNotes(todayLog.notes || "");
+      setHasLoggedToday(true);
+    } else {
+      setHasLoggedToday(false);
     }
     setInsights(generatePeriodInsights(todayLog || ({} as any), logs));
   }, []);
@@ -103,9 +107,10 @@ export default function PeriodTrackerScreen() {
     };
 
     await savePeriodLog(entry);
+    setHasLoggedToday(true);
     const logs = await getPeriodLogs();
     setInsights(generatePeriodInsights(entry, logs));
-    Alert.alert("Success", "Daily log saved successfully!");
+    Alert.alert("Saved!", "Your period log has been recorded.");
   };
 
   const getPhaseEmoji = (phase: string) => {
@@ -134,6 +139,13 @@ export default function PeriodTrackerScreen() {
           <Text className="text-2xl font-bold text-slate-900">
             Period Tracker
           </Text>
+          {hasLoggedToday && (
+            <View className="ml-auto px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100">
+              <Text className="text-[10px] font-bold text-emerald-600">
+                ✓ LOGGED
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Triage Card */}

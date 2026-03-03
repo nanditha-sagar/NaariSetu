@@ -28,6 +28,7 @@ import {
   type AlertStatus,
 } from "@/utils/bpLogic";
 import MultiSelect from "@/components/MultiSelect";
+import { getToday } from "@/utils/trackerData";
 import SegmentedSelector from "@/components/SegmentedSelector";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
@@ -37,6 +38,7 @@ export default function BPTrackerScreen() {
   const [loading, setLoading] = useState(true);
   const [showEntryForm, setShowEntryForm] = useState(false);
   const [chartType, setChartType] = useState<"Weekly" | "Monthly">("Weekly");
+  const [hasLoggedToday, setHasLoggedToday] = useState<boolean>(false);
 
   // Form State
   const [systolic, setSystolic] = useState("");
@@ -52,6 +54,11 @@ export default function BPTrackerScreen() {
     setLoading(true);
     const data = await getBPReadings();
     setReadings(data);
+    if (data.length > 0 && data[0].timestamp && data[0].timestamp.split("T")[0] === getToday()) {
+      setHasLoggedToday(true);
+    } else {
+      setHasLoggedToday(false);
+    }
     setLoading(false);
   }, []);
 
@@ -102,8 +109,9 @@ export default function BPTrackerScreen() {
           [{ text: "OK" }]
         );
       } else {
-        Alert.alert("Success", "Reading saved successfully!");
+        Alert.alert("Saved!", "Reading saved successfully!");
       }
+      setHasLoggedToday(true);
 
       setShowEntryForm(false);
       resetForm();
@@ -179,6 +187,11 @@ export default function BPTrackerScreen() {
               <MaterialIcons name="arrow-back" size={24} color="#334155" />
             </Pressable>
             <Text className="text-2xl font-bold text-slate-900">BP Tracker</Text>
+            {hasLoggedToday && (
+              <View className="ml-2 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-100">
+                <Text className="text-[8px] font-bold text-emerald-600">✓ LOGGED</Text>
+              </View>
+            )}
           </View>
           <Pressable
             onPress={() => setShowEntryForm(true)}

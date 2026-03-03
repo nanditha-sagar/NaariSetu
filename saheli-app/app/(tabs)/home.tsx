@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from "react";
-import { View, Text, ScrollView, Pressable, Image, Alert } from "react-native";
+import React, { useState, useCallback, useMemo } from "react";
+import { View, Text, ScrollView, Pressable, Image, Alert, Linking } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -7,7 +7,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import RiskBadge from "@/components/RiskBadge";
 import HealthTipCard from "@/components/HealthTipCard";
 import { getRandomTip, ScreeningEntry } from "@/utils/data";
-import { getLatestScreening, getTimeAgo } from "@/services/healthService";
+import { getLatestScreening, getTimeAgo, getBPReadings, getGlucoseReadings } from "@/services/healthService";
+import { getPeriodLogs, getMoodLogs, getAnemiaLogs, getToday } from "@/utils/trackerData";
 
 const TRACKERS = [
   {
@@ -81,16 +82,18 @@ const EDUCATIONAL_RESOURCES = [
     title: "Understanding PCOS Symptoms",
     type: "Video",
     duration: "5 min",
-    thumbnail: "https://img.youtube.com/vi/3w3s3q3q3q3/0.jpg", // Placeholder
+    thumbnail: "https://img.youtube.com/vi/3w3s3q3q3q3/0.jpg",
     color: "#a855f7",
+    url: "https://www.youtube.com/watch?v=3w3s3q3q3q3",
   },
   {
     id: "2",
     title: "Yoga for Menstrual Cramps",
     type: "Video",
     duration: "10 min",
-    thumbnail: "https://img.youtube.com/vi/4w4s4q4q4q4/0.jpg", // Placeholder
+    thumbnail: "https://img.youtube.com/vi/4w4s4q4q4q4/0.jpg",
     color: "#ec135b",
+    url: "https://www.youtube.com/watch?v=4w4s4q4q4q4",
   },
   {
     id: "3",
@@ -98,6 +101,7 @@ const EDUCATIONAL_RESOURCES = [
     type: "Article",
     readTime: "3 min read",
     color: "#ef4444",
+    url: "https://www.google.com/search?q=iron+rich+diet+for+anemia",
   },
   {
     id: "4",
@@ -105,7 +109,26 @@ const EDUCATIONAL_RESOURCES = [
     type: "Article",
     readTime: "4 min read",
     color: "#7ed3d4",
+    url: "https://www.google.com/search?q=mental+health+and+hormones",
   },
+  {
+    id: "5",
+    title: "How to know if you have breast cancer",
+    type: "Video",
+    duration: "6 min",
+    thumbnail: "https://img.youtube.com/vi/jeELLC2L65k/0.jpg",
+    color: "#ec4899",
+    url: "https://www.youtube.com/watch?v=jeELLC2L65k",
+  },
+];
+
+const THOUGHTS = [
+  "You’re doing better than you think, even on the days you doubt yourself.",
+  "I hope you remember how strong you are — you’ve survived 100% of your hardest days.",
+  "It’s okay to move slowly. You’re still moving, and that’s what matters.",
+  "You deserve the same love and care you so easily give to others.",
+  "Don’t forget — the world is better because you’re in it.",
+  "Your health is an investment, not an expense. Take it one step at a time.",
 ];
 
 import { auth, db } from "@/utils/firebase";
@@ -117,6 +140,11 @@ export default function HomeScreen() {
   );
   const [healthTip, setHealthTip] = useState(getRandomTip());
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [loggedStatus, setLoggedStatus] = useState<Record<string, boolean>>({});
+
+  const thought = useMemo(() => {
+    return THOUGHTS[Math.floor(Math.random() * THOUGHTS.length)];
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -138,8 +166,34 @@ export default function HomeScreen() {
 
       const latest = await getLatestScreening();
       setLatestScreening(latest);
+      await checkTodayLogs();
     } catch (error) {
       console.error("Error loading home data:", error);
+    }
+  };
+
+  const checkTodayLogs = async () => {
+    const today = getToday();
+    const status: Record<string, boolean> = {};
+
+    try {
+      const [bp, glucose, periods, mood, anemia] = await Promise.all([
+        getBPReadings(),
+        getGlucoseReadings(),
+        getPeriodLogs(),
+        getMoodLogs(),
+        getAnemiaLogs(),
+      ]);
+
+      status["BP"] = bp.some(r => r.timestamp && r.timestamp.split("T")[0] === today);
+      status["glucose"] = glucose.some(r => r.timestamp && r.timestamp.split("T")[0] === today);
+      status["periods"] = periods.some(r => r.date === today);
+      status["mood"] = mood.some(r => r.date === today);
+      status["anemia"] = anemia.some(r => r.date === today);
+
+      setLoggedStatus(status);
+    } catch (e) {
+      console.error("Error checking today's logs:", e);
     }
   };
 
@@ -247,8 +301,7 @@ export default function HomeScreen() {
             </Text>
           </View>
           <Text className="text-slate-700 text-sm italic leading-5">
-            "Your health is an investment, not an expense. Take it one step at a
-            time."
+            "{thought}"
           </Text>
         </View>
 
@@ -374,7 +427,7 @@ export default function HomeScreen() {
               <Pressable
                 key={t.id}
                 onPress={() => handleTrackerPress(t)}
-                className="w-[30%] bg-white rounded-xl border border-slate-100 py-4 items-center active:opacity-80"
+                className="w-[30%] bg-white rounded-xl border border-slate-100 py-4 items-center active:opacity-80 relative"
               >
                 <View
                   className="w-12 h-12 rounded-full items-center justify-center mb-2"
@@ -382,6 +435,14 @@ export default function HomeScreen() {
                 >
                   <Text className="text-xl">{t.emoji}</Text>
                 </View>
+
+                {loggedStatus[t.id] && (
+                  <View
+                    className="absolute top-2 right-2 w-5 h-5 rounded-full bg-emerald-500 items-center justify-center border-2 border-white"
+                  >
+                    <MaterialIcons name="check" size={12} color="white" />
+                  </View>
+                )}
 
                 <Text className="text-xs font-semibold text-slate-700">
                   {t.label}
@@ -459,18 +520,22 @@ export default function HomeScreen() {
             {EDUCATIONAL_RESOURCES.map((item) => (
               <Pressable
                 key={item.id}
-                className="w-60 bg-white rounded-xl border border-slate-100 overflow-hidden"
+                onPress={() => item.url && Linking.openURL(item.url)}
+                className="w-60 bg-white rounded-xl border border-slate-100 overflow-hidden active:opacity-95"
               >
                 <View className="h-32 bg-slate-100 relative">
-                  {/* Placeholder for real image */}
+                  <Image
+                    source={{ uri: item.thumbnail }}
+                    className="absolute inset-0 w-full h-full"
+                    resizeMode="cover"
+                  />
                   <View
-                    className="absolute inset-0 items-center justify-center opacity-20"
-                    style={{ backgroundColor: item.color }}
+                    className="absolute inset-0 items-center justify-center bg-black/20"
                   >
                     <MaterialIcons
                       name={item.type === "Video" ? "play-circle" : "article"}
                       size={48}
-                      color={item.color}
+                      color="white"
                     />
                   </View>
                   <View className="absolute top-2 left-2 bg-white/90 px-2 py-1 rounded text-xs font-medium">

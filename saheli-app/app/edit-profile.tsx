@@ -10,7 +10,9 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  TouchableOpacity,
 } from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -31,7 +33,9 @@ export default function EditProfileScreen() {
     occupation: "",
     height: "",
     weight: "",
+    dob: null,
   });
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   useEffect(() => {
     loadProfile();
@@ -119,6 +123,53 @@ export default function EditProfileScreen() {
     </View>
   );
 
+  const onDateChange = (event: any, selectedDate?: Date) => {
+    setShowDatePicker(Platform.OS === "ios");
+    if (selectedDate) {
+      const dateString = selectedDate.toISOString().split("T")[0];
+      setProfile((prev) => ({ ...prev, dob: dateString }));
+    }
+  };
+
+  const renderDatePicker = () => (
+    <View style={styles.inputGroup}>
+      <Text style={styles.label}>Date of Birth</Text>
+      <TouchableOpacity
+        onPress={() => setShowDatePicker(true)}
+        style={styles.input}
+        className="justify-center"
+      >
+        <Text style={{ color: profile.dob ? "#0f172a" : "#cbd5e1" }}>
+          {profile.dob || "Select your birthday"}
+        </Text>
+      </TouchableOpacity>
+      {Platform.OS === "web" && (
+        <TextInput
+          // @ts-ignore
+          type="date"
+          style={[styles.input, { marginTop: 8 }]}
+          value={profile.dob || ""}
+          onChange={(e: any) => {
+            setProfile((prev) => ({ ...prev, dob: e.target.value }));
+          }}
+        />
+      )}
+      {Platform.OS !== "web" && showDatePicker && (
+        <DateTimePicker
+          value={
+            profile.dob && !isNaN(new Date(profile.dob).getTime())
+              ? new Date(profile.dob)
+              : new Date(2000, 0, 1)
+          }
+          mode="date"
+          display={Platform.OS === "ios" ? "spinner" : "default"}
+          onChange={onDateChange}
+          maximumDate={new Date()}
+        />
+      )}
+    </View>
+  );
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -162,6 +213,7 @@ export default function EditProfileScreen() {
               "full_name",
               "Enter your name",
             )}
+            {renderDatePicker()}
             {renderInput(
               "Phone Number",
               profile.phone || "",
