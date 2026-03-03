@@ -169,42 +169,91 @@ export interface MoodInsights {
 }
 
 export const MOOD_SUGGESTIONS = {
-  Sad: ["Walk", "Call someone", "Music", "3 gratitudes", "Warm shower", "PMS → Be gentle, it's hormonal."],
+  Sad: [
+    "Walk",
+    "Call someone",
+    "Music",
+    "3 gratitudes",
+    "Warm shower",
+    "PMS → Be gentle, it's hormonal.",
+  ],
   Angry: ["4-7-8 breathe", "Pause", "Stretch", "Water", "Avoid reacting"],
-  Anxious: ["Box breathing", "Less caffeine", "Write worries", "Meditate", "5-4-3-2-1"],
+  Anxious: [
+    "Box breathing",
+    "Less caffeine",
+    "Write worries",
+    "Meditate",
+    "5-4-3-2-1",
+  ],
   Tired: ["Sleep check", "Water", "Snack", "10-min nap", "Sunlight"],
   Happy: ["Keep routine", "Note why", "Gratitude", "Share positivity"],
 };
 
 export const MOOD_CARE_DATA = [
-  { activity: "Do a 5-minute stretch", affirmation: "I am doing my best.", tip: "Drink a glass of water now." },
-  { activity: "Write down 3 things you're grateful for", affirmation: "I am enough.", tip: "Take 3 deep breaths." },
-  { activity: "Listen to your favorite song", affirmation: "I am resilient.", tip: "Step outside for fresh air." },
-  { activity: "Organize one small space", affirmation: "I am at peace.", tip: "Dim the lights for 10 minutes." },
+  {
+    activity: "Do a 5-minute stretch",
+    affirmation: "I am doing my best.",
+    tip: "Drink a glass of water now.",
+  },
+  {
+    activity: "Write down 3 things you're grateful for",
+    affirmation: "I am enough.",
+    tip: "Take 3 deep breaths.",
+  },
+  {
+    activity: "Listen to your favorite song",
+    affirmation: "I am resilient.",
+    tip: "Step outside for fresh air.",
+  },
+  {
+    activity: "Organize one small space",
+    affirmation: "I am at peace.",
+    tip: "Dim the lights for 10 minutes.",
+  },
 ];
 
 // ─── Period Types ───
 export interface PeriodLogEntry {
-  date: string;
-  bleeding: "none" | "spotting" | "light" | "medium" | "heavy" | "clots";
-  mucus: "dry" | "sticky" | "creamy" | "egg_white";
-  painIntensity: number; // 1-10
-  painLocation: ("belly" | "back" | "thighs" | "headache" | "breasts")[];
-  hormonalSymptoms: (
-    | "bloating"
-    | "bowel_change"
-    | "skin_breakout"
-    | "libido_high"
-    | "libido_low"
-  )[];
+  date: string; // YYYY-MM-DD
+  isStart: boolean;
+  isEnd: boolean;
+  flow: "none" | "light" | "moderate" | "heavy";
+  symptoms: {
+    cramps: Severity;
+    mood: boolean;
+    bloating: boolean;
+    breastTenderness: boolean;
+    headache: boolean;
+    backPain: boolean;
+    acne: boolean;
+    fatigue: boolean;
+  };
+  additionalData: {
+    spotting: boolean;
+    clotting: boolean;
+    irregularCycle: boolean;
+    missedPeriod: boolean;
+  };
+  notes?: string;
   timestamp: string;
 }
 
 export interface PeriodInsights {
   phase: "Menstruation" | "Follicular" | "Ovulation" | "Luteal" | "Unknown";
-  triageZone: "Green" | "Yellow" | "Red";
+  triageZone: "Green" | "Amber" | "Red";
   triageMessage: string;
   triageSuggestions: string[];
+  cycleDetails: {
+    currentCycleLength: number;
+    avgCycleLength: number;
+    ovulationDate: string;
+    nextPeriodDate: string;
+    regularityStatus: string;
+    fertileWindow: string[];
+    pmsDays: string[];
+  };
+  historyTimeline: { date: string; type: string; flow?: string }[];
+  alerts: string[];
 }
 
 // ─── Constants ───
@@ -223,11 +272,11 @@ export const SEVERITY_OPTIONS: {
   score: number;
   color: string;
 }[] = [
-    { value: "none", label: "None", score: 0, color: "#10b981" },
-    { value: "mild", label: "Mild", score: 1, color: "#f59e0b" },
-    { value: "moderate", label: "Moderate", score: 2, color: "#f97316" },
-    { value: "severe", label: "Severe", score: 3, color: "#ef4444" },
-  ];
+  { value: "none", label: "None", score: 0, color: "#10b981" },
+  { value: "mild", label: "Mild", score: 1, color: "#f59e0b" },
+  { value: "moderate", label: "Moderate", score: 2, color: "#f97316" },
+  { value: "severe", label: "Severe", score: 3, color: "#ef4444" },
+];
 
 export const FOOD_FREQUENCY_OPTIONS = [
   { value: "daily", label: "Daily", score: 0 },
@@ -292,14 +341,14 @@ export function generateAnemiaInsights(logs: AnemiaLogEntry[]): AnemiaInsights {
   const weekAvg =
     thisWeekScores.length > 0
       ? Math.round(
-        thisWeekScores.reduce((a, b) => a + b, 0) / thisWeekScores.length,
-      )
+          thisWeekScores.reduce((a, b) => a + b, 0) / thisWeekScores.length,
+        )
       : 0;
   const prevWeekAvg =
     prevWeekScores.length > 0
       ? Math.round(
-        prevWeekScores.reduce((a, b) => a + b, 0) / prevWeekScores.length,
-      )
+          prevWeekScores.reduce((a, b) => a + b, 0) / prevWeekScores.length,
+        )
       : 0;
 
   // Risk level
@@ -689,27 +738,41 @@ export function generateSkinInsights(entry: SkinLogEntry): SkinInsights {
 }
 
 // ─── Mood Logic ───
-export function generateMoodInsights(entry: MoodLogEntry, allLogs: MoodLogEntry[] = []): MoodInsights {
+export function generateMoodInsights(
+  entry: MoodLogEntry,
+  allLogs: MoodLogEntry[] = [],
+): MoodInsights {
   // Stats calculation
   const weekAgo = new Date();
   weekAgo.setDate(weekAgo.getDate() - 7);
-  const weekLogs = allLogs.filter(l => new Date(l.date) >= weekAgo);
+  const weekLogs = allLogs.filter((l) => new Date(l.date) >= weekAgo);
 
-  const weeklyAvg = weekLogs.length > 0
-    ? Number((weekLogs.reduce((acc, l) => acc + l.valence, 0) / weekLogs.length).toFixed(1))
-    : entry.valence;
+  const weeklyAvg =
+    weekLogs.length > 0
+      ? Number(
+          (
+            weekLogs.reduce((acc, l) => acc + l.valence, 0) / weekLogs.length
+          ).toFixed(1),
+        )
+      : entry.valence;
 
   const moodCounts: Record<number, number> = {};
-  weekLogs.forEach(l => {
+  weekLogs.forEach((l) => {
     moodCounts[l.valence] = (moodCounts[l.valence] || 0) + 1;
   });
-  const topMoodVal = Object.entries(moodCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+  const topMoodVal = Object.entries(moodCounts).sort(
+    (a, b) => b[1] - a[1],
+  )[0]?.[0];
   const topMood = topMoodVal ? `${topMoodVal}/10` : "No data";
 
-  const sleepIssues = weekLogs.filter(l => l.sleep !== "normal").length;
-  const sleepCorrelation = sleepIssues > 3 ? "High impact from sleep" : "Sleep seems stable";
+  const sleepIssues = weekLogs.filter((l) => l.sleep !== "normal").length;
+  const sleepCorrelation =
+    sleepIssues > 3 ? "High impact from sleep" : "Sleep seems stable";
 
-  const stressPattern = weekLogs.filter(l => l.irritability).length > 3 ? "High irritability pattern" : "Normal stress levels";
+  const stressPattern =
+    weekLogs.filter((l) => l.irritability).length > 3
+      ? "High irritability pattern"
+      : "Normal stress levels";
 
   const stats = {
     weeklyAvg,
@@ -775,34 +838,185 @@ export function generateMoodInsights(entry: MoodLogEntry, allLogs: MoodLogEntry[
 }
 
 // ─── Period Logic ───
-export function generatePeriodInsights(entry: PeriodLogEntry): PeriodInsights {
-  // Rough phase estimation would need cycle history, but for basic triage:
-  let triageZone: PeriodInsights["triageZone"] = "Green";
-  let triageMessage = "Your cycle seems to be in a normal range.";
-  let triageSuggestions = ["Keep tracking to see your long-term patterns."];
+export function generatePeriodInsights(
+  entry: PeriodLogEntry,
+  allLogs: PeriodLogEntry[] = [],
+): PeriodInsights {
+  // Sort logs by date
+  const sortedLogs = [...allLogs].sort((a, b) => a.date.localeCompare(b.date));
 
-  if (entry.painIntensity > 7) {
-    triageZone = "Red";
-    triageMessage = "Severe Pain Alert.";
+  // Identify Start dates to calculate Cycles
+  const startDates = sortedLogs
+    .filter((l) => l.isStart)
+    .map((l) => new Date(l.date));
+
+  let avgCycleLength = 28;
+  let currentCycleLength = 0;
+  let regularityStatus = "Regular";
+
+  if (startDates.length >= 2) {
+    const intervals: number[] = [];
+    for (let i = 1; i < startDates.length; i++) {
+      const diff =
+        (startDates[i].getTime() - startDates[i - 1].getTime()) /
+        (1000 * 3600 * 24);
+      intervals.push(diff);
+    }
+    avgCycleLength = Math.round(
+      intervals.reduce((a, b) => a + b, 0) / intervals.length,
+    );
+
+    // Regularity: If variance is more than 7 days
+    const min = Math.min(...intervals);
+    const max = Math.max(...intervals);
+    if (max - min > 7) regularityStatus = "Irregular";
+  }
+
+  // Next Period Prediction
+  let nextPeriodDate = "Unknown";
+  let ovulationDate = "Unknown";
+  let fertileWindow: string[] = [];
+  let pmsDays: string[] = [];
+
+  const lastStart = startDates[startDates.length - 1];
+  if (lastStart) {
+    const next = new Date(lastStart);
+    next.setDate(next.getDate() + avgCycleLength);
+    nextPeriodDate = next.toISOString().split("T")[0];
+
+    const ov = new Date(lastStart);
+    ov.setDate(ov.getDate() + (avgCycleLength - 14));
+    ovulationDate = ov.toISOString().split("T")[0];
+
+    // Fertile window: 5 days before ovulation + ovulation day
+    for (let i = -5; i <= 0; i++) {
+      const d = new Date(ov);
+      d.setDate(d.getDate() + i);
+      fertileWindow.push(d.toISOString().split("T")[0]);
+    }
+
+    // PMS Days: 5 days before next period
+    for (let i = -5; i < 0; i++) {
+      const d = new Date(next);
+      d.setDate(d.getDate() + i);
+      pmsDays.push(d.toISOString().split("T")[0]);
+    }
+
+    // Current length
+    currentCycleLength = Math.round(
+      (new Date().getTime() - lastStart.getTime()) / (1000 * 3600 * 24),
+    );
+  }
+
+  // History Timeline
+  const historyTimeline = sortedLogs
+    .filter((l) => l.isStart || l.isEnd || l.flow !== "none")
+    .slice(-10)
+    .map((l) => ({
+      date: l.date,
+      type: l.isStart ? "Start" : l.isEnd ? "End" : "Flow",
+      flow: l.flow,
+    }));
+
+  // Phase Estimation
+  let phase: PeriodInsights["phase"] = "Unknown";
+  const today = getToday();
+  if (lastStart) {
+    const daysSinceStart = Math.round(
+      (new Date(today).getTime() - lastStart.getTime()) / (1000 * 3600 * 24),
+    );
+    if (daysSinceStart >= 0 && daysSinceStart < 7 && entry?.flow !== "none")
+      phase = "Menstruation";
+    else if (daysSinceStart < avgCycleLength - 14) phase = "Follicular";
+    else if (Math.abs(daysSinceStart - (avgCycleLength - 14)) <= 1)
+      phase = "Ovulation";
+    else if (daysSinceStart < avgCycleLength) phase = "Luteal";
+  }
+
+  // Triage & Suggestions
+  let triageZone: PeriodInsights["triageZone"] = "Green";
+  let triageMessage = "Your cycle seems balanced.";
+  let triageSuggestions: string[] = [
+    "Keep tracking to see your monthly trend.",
+  ];
+  const alerts: string[] = [];
+
+  // Logic based on requirements
+  if (phase === "Menstruation") {
+    triageMessage = "You are currently in your period.";
     triageSuggestions = [
-      "Severe cramps that stop you from working are NOT normal.",
-      "See a specialist to screen for Endometriosis.",
-      "Keep a log of when the pain peaks.",
+      "Stay hydrated",
+      "Iron-rich foods",
+      "Warm compress for cramps",
+      "Adequate rest",
     ];
-  } else if (entry.bleeding === "heavy" || entry.bleeding === "clots") {
-    triageZone = "Yellow";
-    triageMessage = "Heavy flow detected.";
+    if (entry?.flow === "heavy") {
+      triageZone = "Amber";
+      triageMessage = "Heavy flow detected. Monitor closely.";
+    }
+  } else if (pmsDays.includes(today)) {
+    triageMessage = "You might be experiencing PMS symptoms.";
     triageSuggestions = [
-      "Iron-rich foods are critical during heavy flow.",
-      "If you are flooding protection every hour, see a doctor.",
+      "Light exercise like yoga",
+      "Reduce salt & caffeine",
+      "Magnesium-rich foods (Dark chocolate, spinach)",
+      "Relaxation techniques",
+    ];
+  } else if (phase === "Ovulation") {
+    triageMessage = "You are in your fertile window (Ovulation).";
+    triageSuggestions = [
+      "Increased hydration",
+      "Fertility window is open",
+      "Mild cramps (Mittelschmerz) are normal",
     ];
   }
 
+  // Special Alerts
+  if (entry?.flow === "heavy") {
+    // Check if heavy for > 7 days (simplified check)
+    const recentLogs = sortedLogs.slice(-7);
+    if (
+      recentLogs.every((l) => l.flow === "heavy") &&
+      recentLogs.length === 7
+    ) {
+      alerts.push("🚨 Heavy bleeding for >7 days. Consult a doctor.");
+      triageZone = "Red";
+    }
+  }
+
+  if (avgCycleLength > 35) alerts.push("⚠️ Long cycle (>35 days) detected.");
+  if (avgCycleLength < 21 && avgCycleLength > 0)
+    alerts.push("⚠️ Short cycle (<21 days) detected.");
+
+  if (entry?.additionalData?.missedPeriod)
+    alerts.push("🌸 Missed period alert.");
+  if (entry?.additionalData?.irregularCycle || regularityStatus === "Irregular")
+    alerts.push("⚠️ Irregular cycle warning.");
+
+  if (entry?.symptoms?.cramps === "severe") {
+    triageZone = "Red";
+    triageMessage = "Severe Pain Alert.";
+    triageSuggestions.push(
+      "Severe cramps that stop you from working are NOT normal. Consult a specialist.",
+    );
+  }
+
   return {
-    phase: "Unknown", // Needs history
+    phase,
     triageZone,
     triageMessage,
     triageSuggestions,
+    cycleDetails: {
+      currentCycleLength,
+      avgCycleLength,
+      ovulationDate,
+      nextPeriodDate,
+      regularityStatus,
+      fertileWindow,
+      pmsDays,
+    },
+    historyTimeline,
+    alerts,
   };
 }
 

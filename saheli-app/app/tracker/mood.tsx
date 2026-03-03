@@ -6,8 +6,9 @@ import {
   Pressable,
   Alert,
   Linking,
+  Modal,
 } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -42,11 +43,16 @@ function MoodSuggestions({ valence }: { valence: number }) {
     <View className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 mb-6">
       <View className="flex-row items-center gap-2 mb-4">
         <MaterialIcons name="lightbulb" size={20} color="#f59e0b" />
-        <Text className="text-lg font-bold text-slate-800">Suggestions for "{category}"</Text>
+        <Text className="text-lg font-bold text-slate-800">
+          Suggestions for "{category}"
+        </Text>
       </View>
       <View className="flex-row flex-wrap gap-2">
         {tips.map((tip, i) => (
-          <View key={i} className="bg-slate-50 px-3 py-2 rounded-xl border border-slate-100">
+          <View
+            key={i}
+            className="bg-slate-50 px-3 py-2 rounded-xl border border-slate-100"
+          >
             <Text className="text-slate-600 text-xs font-medium">{tip}</Text>
           </View>
         ))}
@@ -60,7 +66,8 @@ function MoodCareButton() {
   const [careItem, setCareItem] = useState(MOOD_CARE_DATA[0]);
 
   const handlePress = () => {
-    const random = MOOD_CARE_DATA[Math.floor(Math.random() * MOOD_CARE_DATA.length)];
+    const random =
+      MOOD_CARE_DATA[Math.floor(Math.random() * MOOD_CARE_DATA.length)];
     setCareItem(random);
     setShowModal(true);
   };
@@ -72,7 +79,9 @@ function MoodCareButton() {
         className="bg-pink-100 p-4 rounded-2xl mb-8 flex-row items-center justify-center border border-pink-200"
       >
         <MaterialIcons name="favorite" size={20} color="#ec4899" />
-        <Text className="text-pink-600 font-bold ml-2">Mood Care: Click for a boost</Text>
+        <Text className="text-pink-600 font-bold ml-2">
+          Mood Care: Click for a boost
+        </Text>
       </Pressable>
 
       <Modal
@@ -84,23 +93,35 @@ function MoodCareButton() {
         <View className="flex-1 bg-black/40 items-center justify-center px-6">
           <View className="bg-white w-full rounded-3xl p-8 items-center shadow-xl">
             <View className="bg-pink-50 w-16 h-16 rounded-full items-center justify-center mb-6">
-              <MaterialIcons name="sparkles" size={32} color="#ec4899" />
+              <Ionicons name="sparkles" size={32} color="#ec4899" />
             </View>
 
-            <Text className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-2">Affirmation</Text>
-            <Text className="text-xl font-bold text-center text-slate-900 mb-6">"{careItem.affirmation}"</Text>
+            <Text className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-2">
+              Affirmation
+            </Text>
+            <Text className="text-xl font-bold text-center text-slate-900 mb-6">
+              "{careItem.affirmation}"
+            </Text>
 
             <View className="w-full bg-slate-50 p-4 rounded-2xl mb-4">
-              <Text className="text-[10px] font-bold text-slate-500 uppercase mb-1">Try this Activity</Text>
-              <Text className="text-slate-700 font-medium">{careItem.activity}</Text>
+              <Text className="text-[10px] font-bold text-slate-500 uppercase mb-1">
+                Try this Activity
+              </Text>
+              <Text className="text-slate-700 font-medium">
+                {careItem.activity}
+              </Text>
             </View>
 
             <View className="w-full bg-slate-50 p-4 rounded-2xl mb-8">
-              <Text className="text-[10px] font-bold text-slate-500 uppercase mb-1">Self-care Tip</Text>
+              <Text className="text-[10px] font-bold text-slate-500 uppercase mb-1">
+                Self-care Tip
+              </Text>
               <Text className="text-slate-700 font-medium">{careItem.tip}</Text>
             </View>
 
-            <Text className="text-slate-400 text-xs italic mb-8">“You’re doing your best.”</Text>
+            <Text className="text-slate-400 text-xs italic mb-8">
+              “You’re doing your best.”
+            </Text>
 
             <Pressable
               onPress={() => setShowModal(false)}
@@ -206,7 +227,7 @@ export default function MoodTrackerScreen() {
             <TriageZoneCard
               zone={
                 insights.triageZone === "Yellow" ||
-                  insights.triageZone === "Orange"
+                insights.triageZone === "Orange"
                   ? "Amber"
                   : (insights.triageZone as any)
               }
@@ -236,20 +257,36 @@ export default function MoodTrackerScreen() {
             <Text className="text-white text-lg font-bold mb-4">Insights</Text>
             <View className="flex-row flex-wrap gap-4">
               <View className="w-[45%] bg-white/10 p-4 rounded-xl">
-                <Text className="text-slate-400 text-[10px] font-bold uppercase mb-1">Weekly Avg</Text>
-                <Text className="text-white text-xl font-bold">{insights.stats.weeklyAvg}/10</Text>
+                <Text className="text-slate-400 text-[10px] font-bold uppercase mb-1">
+                  Weekly Avg
+                </Text>
+                <Text className="text-white text-xl font-bold">
+                  {insights.stats.weeklyAvg}/10
+                </Text>
               </View>
               <View className="w-[45%] bg-white/10 p-4 rounded-xl">
-                <Text className="text-slate-400 text-[10px] font-bold uppercase mb-1">Top Mood</Text>
-                <Text className="text-white text-xl font-bold">{insights.stats.topMood}</Text>
+                <Text className="text-slate-400 text-[10px] font-bold uppercase mb-1">
+                  Top Mood
+                </Text>
+                <Text className="text-white text-xl font-bold">
+                  {insights.stats.topMood}
+                </Text>
               </View>
               <View className="w-full bg-white/10 p-4 rounded-xl">
-                <Text className="text-slate-400 text-[10px] font-bold uppercase mb-1">Pattern</Text>
-                <Text className="text-white text-sm font-medium">{insights.stats.stressPattern}</Text>
+                <Text className="text-slate-400 text-[10px] font-bold uppercase mb-1">
+                  Pattern
+                </Text>
+                <Text className="text-white text-sm font-medium">
+                  {insights.stats.stressPattern}
+                </Text>
               </View>
               <View className="w-full bg-white/10 p-4 rounded-xl">
-                <Text className="text-slate-400 text-[10px] font-bold uppercase mb-1">Sleep Impact</Text>
-                <Text className="text-white text-sm font-medium">{insights.stats.sleepCorrelation}</Text>
+                <Text className="text-slate-400 text-[10px] font-bold uppercase mb-1">
+                  Sleep Impact
+                </Text>
+                <Text className="text-white text-sm font-medium">
+                  {insights.stats.sleepCorrelation}
+                </Text>
               </View>
             </View>
           </View>
