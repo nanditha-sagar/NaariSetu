@@ -93,7 +93,7 @@ function MoodCareButton() {
         <View className="flex-1 bg-black/40 items-center justify-center px-6">
           <View className="bg-white w-full rounded-3xl p-8 items-center shadow-xl">
             <View className="bg-pink-50 w-16 h-16 rounded-full items-center justify-center mb-6">
-              <Ionicons name="sparkles" size={32} color="#ec4899" />
+              <MaterialIcons name="sparkles" size={32} color="#ec4899" />
             </View>
 
             <Text className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-2">
