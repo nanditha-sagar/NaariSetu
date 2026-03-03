@@ -70,7 +70,7 @@ export default function TabLayout() {
           ),
         }}
         listeners={{
-          tabPress: (e) => {
+          tabPress: (e: any) => {
             e.preventDefault();
             router.push("/screening" as any);
           },
