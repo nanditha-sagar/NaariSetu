@@ -64,6 +64,15 @@ const TRACKERS = [
     route: "/tracker/Glucose",
     active: true,
   },
+  {
+    id: "periods",
+    label: "Periods",
+    emoji: "🌸",
+    color: "#ec4899",
+    bg: "rgba(236,72,153,0.1)",
+    route: "/tracker/periods",
+    active: true,
+  },
 ];
 
 const EDUCATIONAL_RESOURCES = [

@@ -1,0 +1,146 @@
+Phase 1: The Daily Check-In (Data Collection)
+The inputs need to change based on where she is in her cycle.
+
+A. The "Vitals" (The Flow & Fluid)
+Bleeding Status:
+
+Options: None / Spotting (Brown/Pink) / Light / Medium / Heavy (Flooding) / Clots (Size of a coin? Size of a golf ball?).
+
+Why: "Flooding" (changing protection every hour) is a medical red flag (Menorrhagia).
+
+Cervical Mucus (The Hidden Biomarker):
+
+Options: Dry / Sticky / Creamy / Egg-white (Stretchy & Clear).
+
+Why: This tells you biologically if she is fertile right now, more accurately than just counting days.
+
+B. The "Pain" Profile (Dysmenorrhea)
+Pain Location:
+
+Options: Lower Belly / Lower Back / Thighs / Headache / Breasts.
+
+Pain Intensity (1-10):
+
+Clinical Threshold: If pain is >7 and not relieved by ibuprofen, this is a major red flag for Endometriosis.
+
+C. The "Hormonal" Symptoms
+Digestion: "Bloating, constipation, or diarrhea ('Period Poop')?"
+
+Why: Prostaglandins cause the uterus to contract but also affect the gut.
+
+Skin: "Greasy, dry, or breaking out?" (Chin/Jawline = Hormonal).
+
+Libido (Sex Drive): High / Low / Neutral.
+
+Why: Spikes during ovulation (Nature wanting you to reproduce).
+
+Phase 2: AI Logic & Triage (The "Brain")
+The AI must understand the 4 Seasons of the Cycle. It shouldn't just say "Day 12"; it should interpret the biology.
+
+Shutterstock
+
+❄️ Phase 1: Menstruation (The "Winter") - Days 1-5
+Biology: Estrogen and Progesterone are at rock bottom. The lining is shedding.
+
+User Status: Low energy, cramping, bleeding.
+
+AI Suggestion: "Your hormones are at their lowest. It's okay to cancel plans."
+
+Diet: "Eat warm, iron-rich foods (spinach, red meat) to replace blood loss. Avoid caffeine (it makes cramps worse)."
+
+Exercise: "Gentle stretching or Yoga. No HIIT today."
+
+🌱 Phase 2: The Follicular Phase (The "Spring") - Days 6-11
+Biology: Estrogen is rising rapidly. FSH (Follicle Stimulating Hormone) is working.
+
+User Status: Energy returns, brain fog clears, skin glows.
+
+AI Suggestion: "You are entering your power window."
+
+Action: "This is the best time to tackle hard projects at work or try a personal best in the gym."
+
+☀️ Phase 3: Ovulation (The "Summer") - Days 12-16
+Biology: Estrogen peaks. Luteinizing Hormone (LH) surges to release the egg.
+
+User Status: Peak libido, magnetic energy, fertile mucus (Egg-white).
+
+AI Suggestion: "You are at peak fertility."
+
+If 'Trying to Conceive' mode: "Go for it! Highest probability today/tomorrow."
+
+If 'Avoiding Pregnancy' mode: "Use protection! Sperm can survive for 5 days waiting for this egg."
+
+Symptom Watch: "Do you feel a sharp twinge on one side? That's Mittelschmerz (ovulation pain). It's normal."
+
+🍂 Phase 4: The Luteal Phase (The "Autumn") - Days 17-28
+Biology: Progesterone dominates. The body prepares for a possible baby. If no baby, hormones crash at the end.
+
+User Status: PMS zone. Bloating, breast tenderness, moodiness, cravings.
+
+AI Suggestion: "Progesterone is high, which naturally slows you down."
+
+Diet: "Craving carbs? That's normal. Try complex carbs (oats/sweet potato) to stabilize serotonin."
+
+Mental: "You might feel more critical or introverted. Don't make big life decisions (like breaking up) this week."
+
+Phase 3: Specialized "Red Flag" Detection
+This is where your app saves lives or fertility.
+
+1. The "Endo" Detector (Endometriosis)
+Logic: If user consistently logs Pain > 8, Pain during sex, or Pain during bowel movements.
+
+AI Alert: "Your pain patterns are outside the 'normal' range. Severe cramps that stop you from working are NOT something you just have to 'live with.' Please show this log to a specialist to screen for Endometriosis."
+
+2. The "PCOS" Pattern (Polycystic Ovary Syndrome)
+Logic:
+
+Cycles > 35 days (Oligomenorrhea).
+
+User logs "Acne" + "Chin Hair" (Hirsutism) + "Weight Gain."
+
+No clear temperature rise (indicating Anovulation - no egg released).
+
+AI Alert: "You are having very long cycles and signs of high androgens (male hormones). This pattern looks like PCOS. Ask your doctor for a blood panel (Testosterone/LH/FSH)."
+
+3. The "Spotting" Check (Polyps/Fibroids)
+Logic: User logs bleeding between periods (Intermenstrual bleeding).
+
+AI Alert: "You are bleeding outside your window. This can be caused by a polyp, a fibroid, or an infection. This requires a physical exam."
+
+Phase 4: Pattern Recognition (The Engineer's Edge)
+Cycle Syncing (The "Wellness" Angle):
+
+Concept: Matching lifestyle to hormones.
+
+Feature: The app generates a "Grocery List" and "Workout Plan" based on the phase.
+
+Example (Luteal Phase): "Add Magnesium and B6 to your cart (helps PMS). Switch gym routine to Pilates."
+
+The "Late" Panic Calculator:
+
+Scenario: Period is 3 days late. User is panicking.
+
+AI Logic: Check past data. "Did you log 'High Stress' or 'Illness' or 'Travel' (jet lag) two weeks ago (during ovulation)?"
+
+AI Insight: "Stress delays ovulation, which delays the period. Since you were sick on the 14th, your period is likely just delayed, not missing. Take a test on the 5th if it hasn't arrived."
+
+Discharge Decoding:
+
+Pattern: If user logs "Thick, white, clumpy discharge" + "Itching."
+
+AI Diagnosis: Likely Yeast Infection (Candida).
+
+Pattern: "Grey, watery discharge" + "Fishy smell."
+
+AI Diagnosis: Likely Bacterial Vaginosis (BV).
+
+Suggestion: "This looks like an infection, not a cycle symptom. Visit a clinic."
+
+Summary for the App Developer
+The "Normal" is a Range: A 28-day cycle is a myth for many. 21-35 days is the medical "normal."
+
+Privacy: This data is extremely sensitive (sexual activity, pregnancy attempts).
+
+Terminology: Use "Menstrual Products" (Pads, Tampons, Cups, Discs) to be inclusive.
+
+Visuals: Use a Circle/Wheel Interface for the main dashboard. It is the most intuitive way to visualize a cycle.

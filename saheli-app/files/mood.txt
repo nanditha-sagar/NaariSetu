@@ -1,0 +1,140 @@
+Phase 1: The Daily Check-In (Data Collection)
+Mental health is not just about "Happy vs. Sad." It is about Arousal (Energy) and Valence (Positivity).
+
+A. The "Vitals" (The Internal State)
+Core Mood: "How do you feel overall today?" (Scale 1-10).
+
+1 = Despair/Hopeless, 5 = Neutral, 10 = Euphoric.
+
+Anhedonia (The inability to feel pleasure): "Did you find enjoyment in things you usually like (hobbies, food, friends)?"
+
+Options: Yes / A little / Not at all (Red Flag for Major Depression).
+
+Anxiety/Tension: "Do you feel on edge or unable to relax?"
+
+Options: Calm / Mild worry / Physical tightness in chest / Panic attack.
+
+Irritability: "Did you feel easily annoyed or angry today?"
+
+Why: In women, depression and hormonal shifts (PMDD) often present as rage or snapping at loved ones, not just sadness.
+
+B. The "Biological" Markers (The Hardware)
+Mental health is physical. The app must track the body.
+5.  Sleep Quality: "How did you sleep?"
+* Options: Normal / Insomnia (trouble falling/staying asleep) / Hypersomnia (sleeping too much/unable to get out of bed).
+6.  Appetite: "How is your eating?"
+* Options: Normal / Comfort eating / No appetite at all.
+7.  Focus: "Could you concentrate on tasks today?"
+* Options: Yes / Brain fog / Mind racing.
+
+C. The Safety Protocol (CRITICAL)
+The "Dark Thoughts" Check: "Have you had thoughts that life isn't worth living, or thoughts of hurting yourself?"
+
+Options: No / Passive thoughts ("I wish I wouldn't wake up") / Active thoughts (Planning).
+
+Engineering Note: If ANY positive answer here -> Bypass all logic and go straight to Crisis Mode.
+
+Phase 2: AI Logic & Triage (The "Brain")
+🟢 Zone 1: Euthymic (Stable/Wellness)
+Conditions: Mood 6-10, Sleep normal, Anxiety low.
+
+AI Interpretation: The user is resilient and functioning well.
+
+App Message: "You're in a good headspace."
+
+Suggestion: "Capture this moment. Write down one thing you are grateful for. This builds your 'psychological immune system' for harder days."
+
+🟡 Zone 2: The "Blues" / Stress (Reactive)
+Conditions: Mood 4-5, High Anxiety, "Comfort eating," or Irritability.
+
+AI Interpretation: Reaction to external stress or hormonal shift. Not a disorder yet, but needs management.
+
+App Message: "It sounds like a heavy day. Be gentle with yourself."
+
+Suggestion:
+
+Action: "Try a 'Box Breathing' exercise (4-4-4-4) right now for 2 minutes to lower your cortisol."
+
+Reframing: "You mentioned work stress yesterday. This feeling is a natural reaction, not a failure."
+
+🟠 Zone 3: Depressive/Anxious Episode (Warning)
+Conditions: Mood < 4 for more than 2 weeks (The clinical threshold for depression), OR severe sleep disruption.
+
+AI Interpretation: The brain is stuck in a negative loop. Neurotransmitters (Serotonin/Dopamine) may be depleted.
+
+App Message: "You've been feeling low for a while now. It might be time to get some support."
+
+Suggestion:
+
+"Behavioral Activation: Do one small thing today (e.g., wash your face, walk to the mailbox). Action precedes motivation."
+
+"Consider booking a session with a therapist."
+
+🔴 Zone 4: Crisis (Emergency)
+Conditions: "Yes" to self-harm thoughts, Panic Attack in progress, or Manic symptoms (No sleep for days + feeling 'invincible').
+
+AI Interpretation: Imminent risk to safety.
+
+App Action: INTERRUPTION SCREEN.
+
+Message: "Please stay with us. You are important. Based on your answer, we strongly recommend professional help immediately."
+
+Display: Buttons for Suicide Prevention Hotline (988), Crisis Text Line, or "Call a Friend."
+
+Lock: Do not give "suggestions" like "take a walk." Give resources.
+
+Phase 3: Specialized Women's Health Features
+Women are misdiagnosed with "Mood Swings" constantly. Your app can solve this by overlaying the cycle.
+
+1. The PMDD Tracker (Premenstrual Dysphoric Disorder)
+The Context: PMDD is a severe sensitivity to progesterone. It causes severe depression/rage 7-10 days before the period, which magically vanishes once bleeding starts.
+
+AI Logic: If the user logs "Severe Irritability/Depression" specifically in the Luteal Phase (Days 21-28) for two cycles in a row, but is fine during the Follicular phase (Days 7-14).
+
+AI Insight: "Notice a pattern? Your mood dips significantly 5 days before your period. This might be PMDD, not standard depression. Show this chart to your doctor."
+
+2. Perinatal / Postpartum Mode
+The "Baby Blues" vs. PPD:
+
+Blues: Crying spells/moodiness for 2 weeks after birth. Normal.
+
+PPD: Symptoms persist > 2 weeks, disconnection from baby, scary intrusive thoughts.
+
+AI Question (If 'Postpartum' mode is on): "Do you feel able to bond with your baby today?" or "Are you having scary thoughts about the baby?"
+
+Action: If "Scary thoughts" -> Immediate Red Flag for Postpartum Psychosis/OCD.
+
+3. The "Perimenopause" Rage
+Target: Women 40-50.
+
+Symptom: "Sudden, unexplained anger" or "crying spells" coupled with "Hot Flashes."
+
+AI Insight: "Your mood changes seem linked to your physical symptoms (hot flashes). This could be perimenopausal hormonal flux. Hormone Replacement Therapy (HRT) might help mood more than antidepressants. Discuss with your OB-GYN."
+
+Phase 4: Pattern Recognition (The Engineer's Edge)
+The "Social Battery" Loop:
+
+Pattern: User logs "Isolated/Stayed Home" -> Mood drops the next day -> Stays home again.
+
+AI Insight: "You are in an isolation loop. Depression wants you to stay alone, which makes depression worse. Break the cycle: Call one friend today, even for 5 minutes."
+
+The "Substance" Correlation:
+
+Pattern: User logs "Alcohol" or "High Caffeine" -> Anxiety spikes the next morning ("Hangxiety").
+
+AI Insight: "Your anxiety scores are 40% higher the day after you drink alcohol."
+
+Seasonal Affective Disorder (SAD):
+
+Pattern: Mood scores drop consistently as daylight hours decrease (Nov-Feb).
+
+AI Insight: "Your trends show a dip during winter months. Have you considered a Light Therapy lamp?"
+
+Summary for the App Developer
+The "User" is unreliable: A depressed brain lies to the user ("You are worthless"). The app provides objective truth ("Actually, you had 3 good days this week").
+
+Privacy is Paramount: Users will confess things to an AI they won't tell a spouse. Encryption must be military-grade.
+
+The "Crisis" Button: Must be accessible on every single screen, always.
+
+Disclaimer: "This app tracks mood trends. It is not a replacement for therapy or medication."

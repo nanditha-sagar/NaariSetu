@@ -1,0 +1,134 @@
+Phase 1: The Daily Check-In (Data Collection)
+Since skin conditions vary wildly (Acne vs. Eczema vs. Moles), the app should first ask: "What are we tracking today?" (General Health, specific Lesion/Mole, or a Flare-up).
+
+A. The "Vitals" (Sensory & Visual)
+Itch Level (Pruritus): "On a scale of 1-10, how itchy is your skin today?"
+
+Why: Intense itch disturbs sleep and indicates active inflammation (Eczema/Psoriasis).
+
+Pain/Tenderness: "Does the area hurt when you touch it?"
+
+Options: No / A little / Throbbing pain (Red Flag for abscess/cyst).
+
+Heat Check (Crucial): "Does the red area feel hotter than the surrounding skin?"
+
+Why: Heat = Infection (Cellulitis). This is a medical urgency.
+
+Texture: "How does the skin feel?"
+
+Options: Smooth / Dry & Flaky / Rough & Bumpy / Weeping (Oozing fluid).
+
+B. The "Lesion" Tracker (For specific spots/moles)
+If the user is tracking a specific spot, use the ABCDE Rule logic:
+5.  Change in Size: "Does the spot look bigger today compared to the last photo?"
+6.  Change in Color: "Has it changed color (e.g., turned black, purple, or multi-colored)?"
+7.  Bleeding: "Did it bleed spontaneously (without you scratching it)?" (Red Flag).
+
+C. Contextual Triggers
+Skincare Routine: "Did you use any new products (soaps, lotions, makeup) in the last 3 days?"
+
+Why: Contact dermatitis (allergic reaction) often has a delayed onset.
+
+Dietary Triggers: "Did you consume high-sugar or high-dairy foods yesterday?" (Common acne triggers).
+
+Stress & Sleep: "Rate your stress level." (Stress releases cortisol, which causes oil production and inflammation).
+
+Phase 2: AI Logic & Triage (The "Brain")
+🟢 Zone 1: Stable / Improving
+Conditions: Itch score < 3, no pain, no heat, lesions are drying up or fading.
+
+AI Interpretation: The skin barrier is healing.
+
+App Message: "Your skin seems calm today."
+
+Suggestion: "Consistency is key. Apply your moisturizer/sunscreen as usual. Don't pick at healing spots!"
+
+🟡 Zone 2: Flare-Up (Inflammation)
+Conditions: Itch score > 5, new redness, new bumps (papules/pustules), or increased dryness.
+
+AI Interpretation: Active inflammation (Acne breakout, Eczema flare, or Rosacea).
+
+App Message: "It looks like you're having a flare-up."
+
+Suggestion:
+
+Action: "Simplify your routine today. Stick to a gentle cleanser and moisturizer only. Avoid active ingredients (like retinol/acids) on irritated skin."
+
+Lifestyle: "Change your pillowcase tonight. Avoid hot water when washing your face."
+
+🔴 Zone 3: Infection or Danger (Medical Attention Needed)
+Conditions:
+
+Heat: Skin feels hot to the touch.
+
+Spread: Redness is expanding rapidly (drawing a line around the redness is a common doctor trick—if it crosses the line, it's spreading).
+
+Systemic Signs: User reports Fever + Rash.
+
+Angioedema: Swelling of the lips, eyes, or tongue.
+
+AI Interpretation: Risk of Cellulitis (bacterial infection), severe allergic reaction, or viral exanthem.
+
+App Message: "ALERT: POTENTIAL INFECTION OR SEVERE REACTION."
+
+Suggestion: "Please see a doctor immediately. If you have trouble breathing or your throat feels tight, go to the ER."
+
+Phase 3: Specialized Women's Health Features
+Skin is the dashboard of a woman's hormonal health.
+
+1. The "Hormonal Acne" Predictor
+The Logic: Testosterone and Progesterone fluctuate during the cycle.
+
+Ovulation (Day 14): Skin is often "glowing" (Estrogen peak).
+
+Luteal Phase (Day 21-28): Progesterone rises, causing oil glands to close up. This is when deep, painful cysts appear on the jawline.
+
+AI Action: Sync with her cycle.
+
+Suggestion (Day 20): "Your cycle is entering the Luteal phase. Your skin is producing more oil now. Start using a Salicylic Acid cleanser proactively to prevent next week's breakout."
+
+2. Pregnancy Mode (The "Glow" vs. The "Mask")
+Melasma: Dark patches on the face ("Mask of Pregnancy").
+
+Suggestion: "Your skin is highly sensitive to sun right now due to hormones. You MUST wear SPF 50+ even indoors."
+
+PUPPP Rash: An intensely itchy rash on the belly during late pregnancy.
+
+AI Alert: If a pregnant user reports "Intense Itch on Belly," the app should suggest: "This could be PUPPP or Cholestasis (liver issue). Mention this to your OB-GYN immediately."
+
+3. PCOS (Polycystic Ovary Syndrome) Detection
+If the user consistently logs Acne on the jawline + Excess hair growth (Hirsutism) + Irregular Periods, the AI should recognize the pattern.
+
+Suggestion: "You have logged consistent jawline breakouts and irregular cycles. Have you discussed PCOS with your doctor? This is often a hormonal issue, not just a skin issue."
+
+Phase 4: Pattern Recognition (The AI's Value Add)
+"Purging" vs. "Breaking Out":
+
+Scenario: User starts a new Retinol product.
+
+Pattern: Skin gets worse for 2-4 weeks, then better.
+
+AI Insight: "This looks like 'purging' (increasing cell turnover), which is normal for this product. Stick with it unless it itches/burns."
+
+Contrast: If the reaction is in a new area where she never gets acne, the AI says: "This is likely a reaction, not purging. Stop the product."
+
+The "Dairy/Sugar" Lag:
+
+Acne from diet doesn't happen immediately; it often takes 48-72 hours.
+
+AI Insight: "You're breaking out today (Wednesday). You logged high sugar intake on Sunday. This might be the delayed trigger."
+
+The "Stress" Flare:
+
+Pattern: User logs "High Stress" on Monday; Eczema/Psoriasis flares on Wednesday.
+
+AI Insight: "Stress is a major trigger for your eczema. Consider mindfulness techniques when you feel your stress levels rising to prevent skin flares."
+
+Summary for the App Developer
+Visual Tracking: Allow users to upload photos to compare Day 1 vs Day 30 (Use a "Ghost" overlay so they take the photo at the same angle).
+
+Cycle Syncing: Absolute necessity for female users.
+
+The "Heat" Question: This is your safety net against missing dangerous infections.
+
+Disclaimer: "AI cannot diagnose cancer or infection definitively. If a mole changes or a rash spreads, see a dermatologist."

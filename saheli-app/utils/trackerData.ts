@@ -3,6 +3,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 // ─── Storage Keys ───
 const KEYS = {
   ANEMIA_LOGS: "saheliAnemiaLogs",
+  BP_LOGS: "saheliBPLogs",
+  GLUCOSE_LOGS: "saheliGlucoseLogs",
+  SKIN_LOGS: "saheliSkinLogs",
+  MOOD_LOGS: "saheliMoodLogs",
+  PERIOD_LOGS: "saheliPeriodLogs",
 };
 
 // ─── Types ───
@@ -41,6 +46,143 @@ export interface AnemiaInsights {
   alerts: string[];
   weekAvg: number;
   prevWeekAvg: number;
+}
+
+export interface BPLogEntry {
+  date: string; // YYYY-MM-DD
+  systolic: number;
+  diastolic: number;
+  pulse: number;
+  position: "Sitting" | "Standing" | "Lying Down";
+  arm: "Left" | "Right";
+  rested5Min: boolean;
+  headache: "none" | "mild" | "severe" | "thunderclap";
+  vision: "normal" | "blurry" | "spots";
+  chestBreathing: "none" | "shortness" | "pain";
+  neurological: "none" | "weakness_diff_speaking";
+  highSalt: boolean;
+  tookMeds: boolean;
+  stressLevel: number; // 1-10
+  isPregnant: boolean;
+  preeclampsiaSwelling?: boolean;
+  preeclampsiaBellyPain?: boolean;
+  notes?: string;
+  timestamp: string;
+}
+
+export interface BPInsights {
+  riskScore: number; // 0–100 mapping
+  riskLevel: "Optimal" | "Elevated" | "High" | "Crisis" | "Low";
+  category: "Normal" | "Elevated" | "Stage 1" | "Stage 2" | "Crisis" | "Low";
+  triageZone: "Green" | "Yellow" | "Orange" | "Red";
+  triageMessage: string;
+  triageSuggestions: string[];
+  trend: "Improving" | "Stable" | "Worsening" | "Not enough data";
+  alerts: string[];
+  weekAvg: {
+    systolic: number;
+    diastolic: number;
+    pulse: number;
+  };
+  dailyAvg: {
+    systolic: number;
+    diastolic: number;
+  };
+}
+
+// ─── Glucose Types ───
+export interface GlucoseLogEntry {
+  date: string;
+  value: number; // mg/dL
+  unit: "mg/dL" | "mmol/L";
+  timing: "fasting" | "pre_meal" | "post_meal" | "bedtime";
+  hypoSymptoms: ("shaky" | "sweaty" | "heart_racing" | "hungry" | "confused")[];
+  hyperSymptoms: (
+    | "thirsty"
+    | "frequent_urination"
+    | "blurry_vision"
+    | "nausea"
+    | "stomach_pain"
+  )[];
+  carbIntake: "low" | "medium" | "heavy";
+  exercise: boolean;
+  tookMeds: boolean;
+  isPregnant: boolean;
+  isLutealPhase?: boolean; // Premenstrual spike
+  timestamp: string;
+}
+
+export interface GlucoseInsights {
+  triageZone: "Green" | "Yellow" | "Orange" | "Red";
+  triageMessage: string;
+  triageSuggestions: string[];
+  riskLevel: "Low" | "Target" | "Elevated" | "High Risk";
+}
+
+// ─── Skin Types ───
+export interface SkinLogEntry {
+  date: string;
+  itching: number; // 1-10
+  pain: "none" | "mild" | "throbbing";
+  heatCheck: boolean; // Hotter than surrounding skin
+  texture: "smooth" | "dry_flaky" | "rough_bumpy" | "weeping";
+  isTrackingSpot: boolean;
+  spotChanges?: ("size" | "color" | "bleeding")[];
+  dietTriggers: ("sugar" | "dairy" | "new_product")[];
+  stressLevel: number;
+  timestamp: string;
+}
+
+export interface SkinInsights {
+  triageZone: "Green" | "Yellow" | "Red";
+  triageMessage: string;
+  triageSuggestions: string[];
+}
+
+// ─── Mood Types ───
+export interface MoodLogEntry {
+  date: string;
+  valence: number; // 1-10
+  anhedonia: "yes" | "little" | "none";
+  anxiety: "calm" | "mild" | "physical_tightness" | "panic";
+  irritability: boolean;
+  sleep: "normal" | "insomnia" | "hypersomnia";
+  appetite: "normal" | "comfort" | "none";
+  focus: "normal" | "brain_fog" | "racing";
+  safetyCheck: "no" | "passive" | "active";
+  isPostpartum?: boolean;
+  isPerimenopause?: boolean;
+  timestamp: string;
+}
+
+export interface MoodInsights {
+  triageZone: "Green" | "Yellow" | "Orange" | "Red";
+  triageMessage: string;
+  triageSuggestions: string[];
+}
+
+// ─── Period Types ───
+export interface PeriodLogEntry {
+  date: string;
+  bleeding: "none" | "spotting" | "light" | "medium" | "heavy" | "clots";
+  mucus: "dry" | "sticky" | "creamy" | "egg_white";
+  painIntensity: number; // 1-10
+  painLocation: ("belly" | "back" | "thighs" | "headache" | "breasts")[];
+  hormonalSymptoms: (
+    | "bloating"
+    | "bowel_change"
+    | "skin_breakout"
+    | "libido_high"
+    | "libido_low"
+  )[];
+  timestamp: string;
+}
+
+export interface PeriodInsights {
+  phase: "Menstruation" | "Follicular" | "Ovulation" | "Luteal" | "Unknown";
+  triageZone: "Green" | "Yellow" | "Red";
+  triageMessage: string;
+  triageSuggestions: string[];
 }
 
 // ─── Constants ───
@@ -220,33 +362,464 @@ export function generateAnemiaInsights(logs: AnemiaLogEntry[]): AnemiaInsights {
   };
 }
 
-// ─── Storage Helpers ───
-export async function saveAnemiaLog(entry: AnemiaLogEntry): Promise<void> {
-  try {
-    const logs = await getAnemiaLogs();
-    // Replace if same date exists
-    const idx = logs.findIndex((l) => l.date === entry.date);
-    if (idx >= 0) {
-      logs[idx] = entry;
-    } else {
-      logs.push(entry);
+// ─── BP Logic ───
+export function computeBPScore(entry: BPLogEntry): number {
+  const sysScore = Math.max(0, (entry.systolic - 100) * 1.25);
+  const diaScore = Math.max(0, (entry.diastolic - 60) * 1.6);
+  return Math.min(100, Math.round((sysScore + diaScore) / 2));
+}
+
+export function generateBPInsights(logs: BPLogEntry[]): BPInsights {
+  const latestLog = logs[logs.length - 1];
+  const today = getToday();
+  const weekAgo = new Date();
+  weekAgo.setDate(weekAgo.getDate() - 7);
+
+  const thisWeekLogs = logs.filter((l) => new Date(l.date) >= weekAgo);
+  const todayLogs = logs.filter((l) => l.date === today);
+
+  const calcAvg = (entries: BPLogEntry[]) => {
+    if (entries.length === 0) return { systolic: 0, diastolic: 0, pulse: 0 };
+    return {
+      systolic: Math.round(
+        entries.reduce((a, b) => a + b.systolic, 0) / entries.length,
+      ),
+      diastolic: Math.round(
+        entries.reduce((a, b) => a + b.diastolic, 0) / entries.length,
+      ),
+      pulse: Math.round(
+        entries.reduce((a, b) => a + b.pulse, 0) / entries.length,
+      ),
+    };
+  };
+
+  const weekAvg = calcAvg(thisWeekLogs);
+  const dailyAvg = calcAvg(todayLogs);
+
+  let triageZone: BPInsights["triageZone"] = "Green";
+  let riskLevel: BPInsights["riskLevel"] = "Optimal";
+  let category: BPInsights["category"] = "Normal";
+  let triageMessage =
+    "Perfect reading. Cardiovascular system is under low stress.";
+  let triageSuggestions = [
+    "Maintain your current lifestyle.",
+    "Keep your sodium intake low to stay in this zone.",
+  ];
+
+  if (latestLog) {
+    const sys = latestLog.systolic;
+    const dia = latestLog.diastolic;
+    const isPregnant = latestLog.isPregnant;
+
+    // Determine Category (AHA Standards)
+    if (sys >= 180 || dia >= 120) category = "Crisis";
+    else if (sys >= 140 || dia >= 90) category = "Stage 2";
+    else if (sys >= 130 || dia >= 80) category = "Stage 1";
+    else if (sys >= 120 && dia < 80) category = "Elevated";
+    else if (sys < 90 || dia < 60) category = "Low";
+    else category = "Normal";
+
+    // Crisis / Emergency Red Flag
+    const hasRedFlagSymptom =
+      latestLog.headache === "severe" ||
+      latestLog.headache === "thunderclap" ||
+      latestLog.vision === "spots" ||
+      latestLog.chestBreathing === "pain" ||
+      latestLog.neurological === "weakness_diff_speaking";
+
+    const isCrisisNumbers = sys >= 180 || dia >= 120;
+
+    if (isCrisisNumbers || hasRedFlagSymptom) {
+      triageZone = "Red";
+      riskLevel = "Crisis";
+      category = "Crisis";
+      triageMessage =
+        "CRITICAL ALERT: Your reading or symptoms indicate a medical emergency.";
+      triageSuggestions = [
+        "SEEK EMERGENCY CARE IMMEDIATELY.",
+        "Do not drive yourself to the hospital.",
+        "You are in a hypertensive crisis zone.",
+      ];
     }
-    // Sort by date
+    // Preeclampsia Mode
+    else if (
+      isPregnant &&
+      (sys >= 140 || dia >= 90) &&
+      (latestLog.preeclampsiaSwelling || latestLog.preeclampsiaBellyPain)
+    ) {
+      triageZone = "Red";
+      riskLevel = "Crisis";
+      triageMessage =
+        "PREECLAMPSIA ALERT: High BP + swelling/pain in pregnancy is an emergency.";
+      triageSuggestions = [
+        "Go to the Emergency Room or contact your OB-GYN immediately.",
+        "This threatens both mother and baby.",
+      ];
+    }
+    // High / Stage 2 (Using User's trigger 140/90)
+    else if (sys >= 140 || dia >= 90) {
+      triageZone = "Orange";
+      riskLevel = "High";
+      triageMessage = "Your blood pressure is high (Stage 2).";
+      triageSuggestions = [
+        "Sit in a quiet room for 15 minutes and re-measure.",
+        "If the re-measure is still high, contact your healthcare provider today.",
+        "Did you miss your medication?",
+      ];
+    }
+    // Elevated / Stage 1
+    else if (sys >= 130 || dia >= 80) {
+      triageZone = "Yellow";
+      riskLevel = "High"; // Standardizing risk level
+      triageMessage = "Your BP is in Stage 1 hypertension range.";
+      triageSuggestions = [
+        "Monitor closely over the next few days.",
+        "Try a 10-minute deep breathing session.",
+        "Reduction in salt and caffeine may help.",
+      ];
+    } else if (sys >= 120) {
+      triageZone = "Yellow";
+      riskLevel = "Elevated";
+      triageMessage = "Your BP is slightly elevated.";
+      triageSuggestions = [
+        "Check your hydration levels.",
+        "Ensure you are getting enough sleep.",
+      ];
+    }
+    // Hypotension
+    else if (sys <= 90 || dia <= 60) {
+      triageZone = "Yellow";
+      riskLevel = "Low";
+      category = "Low";
+      triageMessage = "Your blood pressure is low.";
+      triageSuggestions = [
+        "Drink 500ml of water immediately.",
+        "Add a pinch of salt to your next meal.",
+        "Lie down with legs raised if feeling dizzy.",
+      ];
+    }
+  }
+
+  return {
+    riskScore: latestLog ? computeBPScore(latestLog) : 0,
+    riskLevel,
+    category,
+    triageZone,
+    triageMessage,
+    triageSuggestions,
+    trend: "Stable",
+    alerts: [],
+    weekAvg, // updated to object
+    dailyAvg,
+  };
+}
+
+// ─── BP Storage Helpers ───
+export async function saveBPLog(entry: BPLogEntry): Promise<void> {
+  try {
+    const logs = await getBPLogs();
+    const idx = logs.findIndex((l) => l.date === entry.date);
+    if (idx >= 0) logs[idx] = entry;
+    else logs.push(entry);
     logs.sort((a, b) => a.date.localeCompare(b.date));
-    await AsyncStorage.setItem(KEYS.ANEMIA_LOGS, JSON.stringify(logs));
+    await AsyncStorage.setItem(KEYS.BP_LOGS, JSON.stringify(logs));
   } catch (e) {
-    console.error("Failed to save anemia log:", e);
+    console.error("Failed to save BP log:", e);
   }
 }
 
-export async function getAnemiaLogs(): Promise<AnemiaLogEntry[]> {
+export async function getBPLogs(): Promise<BPLogEntry[]> {
   try {
-    const data = await AsyncStorage.getItem(KEYS.ANEMIA_LOGS);
+    const data = await AsyncStorage.getItem(KEYS.BP_LOGS);
     return data ? JSON.parse(data) : [];
   } catch (e) {
-    console.error("Failed to load anemia logs:", e);
     return [];
   }
+}
+
+export async function getTodayBPLog(): Promise<BPLogEntry | null> {
+  const today = getToday();
+  const logs = await getBPLogs();
+  return logs.find((l) => l.date === today) || null;
+}
+
+// ─── Glucose Logic ───
+export function generateGlucoseInsights(
+  entry: GlucoseLogEntry,
+): GlucoseInsights {
+  const val = entry.value;
+  const isPregnant = entry.isPregnant;
+
+  // Crisis: Hypoglycemia
+  if (val < 70) {
+    return {
+      triageZone: "Red",
+      riskLevel: "Low",
+      triageMessage:
+        "FLASHING RED ALERT: Your sugar is dangerously low (Hypoglycemia).",
+      triageSuggestions: [
+        "Rule of 15: Eat 15g fast-acting carbs (juice/honey).",
+        "Wait 15 mins and re-check.",
+        val < 55
+          ? "CRITICAL: Call for help immediately or use Glucagon kit."
+          : "If still low, repeat Rule of 15.",
+      ],
+    };
+  }
+
+  // Severe Hyperglycemia / Ketosis Risk
+  if (val > 250) {
+    const hasDKA =
+      entry.hyperSymptoms.includes("nausea") ||
+      entry.hyperSymptoms.includes("stomach_pain");
+    return {
+      triageZone: "Red",
+      riskLevel: "High Risk",
+      triageMessage: "WARNING: High risk of Diabetic Ketoacidosis (DKA).",
+      triageSuggestions: [
+        "Contact your doctor immediately.",
+        "Check for Ketones if you have Type 1 Diabetes.",
+        "Do NOT exercise as this can spike sugar further.",
+      ],
+    };
+  }
+
+  // Target Ranges
+  let isHigh = false;
+  if (isPregnant) {
+    if (entry.timing === "fasting" && val > 95) isHigh = true;
+    if (entry.timing === "post_meal" && val > 140) isHigh = true;
+  } else {
+    if (
+      (entry.timing === "fasting" || entry.timing === "pre_meal") &&
+      val > 130
+    )
+      isHigh = true;
+    if (entry.timing === "post_meal" && val > 180) isHigh = true;
+  }
+
+  if (isHigh) {
+    return {
+      triageZone: "Orange",
+      riskLevel: "Elevated",
+      triageMessage: "Your sugar is running high.",
+      triageSuggestions: [
+        "Drink a large glass of water.",
+        "Take a 15-minute gentle walk if you feel well.",
+        isPregnant
+          ? "Strictly follow your pregnancy diet plan for the baby's safety."
+          : "Review your last meal for hidden sugars.",
+      ],
+    };
+  }
+
+  return {
+    triageZone: "Green",
+    riskLevel: "Target",
+    triageMessage: "Excellent control. You are in the target range.",
+    triageSuggestions: [
+      "Keep up the good work.",
+      entry.isLutealPhase
+        ? "Progesterone may cause insulin resistance; patience is key."
+        : "Logging helps your doctor see your stability.",
+    ],
+  };
+}
+
+// ─── Skin Logic ───
+export function generateSkinInsights(entry: SkinLogEntry): SkinInsights {
+  if (entry.heatCheck || entry.pain === "throbbing") {
+    return {
+      triageZone: "Red",
+      triageMessage: "ALERT: Potential Infection or Severe Reaction.",
+      triageSuggestions: [
+        "Please see a doctor immediately.",
+        "Heat + Pain can indicate Cellulitis, which is an urgency.",
+        "If you have trouble breathing, go to the ER.",
+      ],
+    };
+  }
+
+  if (
+    entry.itching > 5 ||
+    entry.texture === "weeping" ||
+    entry.texture === "dry_flaky"
+  ) {
+    return {
+      triageZone: "Yellow",
+      triageMessage: "It looks like you're having a flare-up.",
+      triageSuggestions: [
+        "Simplify your routine: gentle cleanser and moisturizer only.",
+        "Avoid active ingredients (retinol/acids) on irritated skin.",
+        "Change your pillowcase tonight.",
+      ],
+    };
+  }
+
+  return {
+    triageZone: "Green",
+    triageMessage: "Your skin seems calm today.",
+    triageSuggestions: [
+      "Consistency is key. Apply sunscreen as usual.",
+      "Don't pick at any healing spots.",
+    ],
+  };
+}
+
+// ─── Mood Logic ───
+export function generateMoodInsights(entry: MoodLogEntry): MoodInsights {
+  if (entry.safetyCheck !== "no") {
+    return {
+      triageZone: "Red",
+      triageMessage: "CRITICAL: Please stay with us. You are important.",
+      triageSuggestions: [
+        "WE STRONGLY RECOMMEND PROFESSIONAL HELP IMMEDIATELY.",
+        "Call 988 (Suicide Prevention Hotline) or reach out to a trusted friend.",
+        "Resources are available 24/7.",
+      ],
+    };
+  }
+
+  if (
+    entry.valence < 4 ||
+    entry.sleep !== "normal" ||
+    entry.anxiety === "panic"
+  ) {
+    return {
+      triageZone: "Orange",
+      triageMessage:
+        "You've been feeling low or anxious. It might be time for support.",
+      triageSuggestions: [
+        "Try 'Behavioral Activation': do one small thing today (e.g. wash your face).",
+        "Consider booking a session with a therapist.",
+        entry.isPostpartum
+          ? "Postpartum depression is common and treatable. Talk to your OB-GYN."
+          : "Action often precedes motivation.",
+      ],
+    };
+  }
+
+  if (entry.valence <= 5 || entry.irritability) {
+    return {
+      triageZone: "Yellow",
+      triageMessage: "It sounds like a heavy day. Be gentle with yourself.",
+      triageSuggestions: [
+        "Try Box Breathing (4-4-4-4) for 2 minutes.",
+        "This feeling might be a natural reaction to stress, not a failure.",
+      ],
+    };
+  }
+
+  return {
+    triageZone: "Green",
+    triageMessage: "You're in a good headspace.",
+    triageSuggestions: [
+      "Capture this moment. Write down one thing you are grateful for.",
+      "This builds your 'psychological immune system'.",
+    ],
+  };
+}
+
+// ─── Period Logic ───
+export function generatePeriodInsights(entry: PeriodLogEntry): PeriodInsights {
+  // Rough phase estimation would need cycle history, but for basic triage:
+  let triageZone: PeriodInsights["triageZone"] = "Green";
+  let triageMessage = "Your cycle seems to be in a normal range.";
+  let triageSuggestions = ["Keep tracking to see your long-term patterns."];
+
+  if (entry.painIntensity > 7) {
+    triageZone = "Red";
+    triageMessage = "Severe Pain Alert.";
+    triageSuggestions = [
+      "Severe cramps that stop you from working are NOT normal.",
+      "See a specialist to screen for Endometriosis.",
+      "Keep a log of when the pain peaks.",
+    ];
+  } else if (entry.bleeding === "heavy" || entry.bleeding === "clots") {
+    triageZone = "Yellow";
+    triageMessage = "Heavy flow detected.";
+    triageSuggestions = [
+      "Iron-rich foods are critical during heavy flow.",
+      "If you are flooding protection every hour, see a doctor.",
+    ];
+  }
+
+  return {
+    phase: "Unknown", // Needs history
+    triageZone,
+    triageMessage,
+    triageSuggestions,
+  };
+}
+
+// ─── Final Storage Helpers ───
+export async function saveGenericLog<T>(
+  key: string,
+  entry: T & { date: string },
+): Promise<void> {
+  try {
+    const data = await AsyncStorage.getItem(key);
+    const logs: (T & { date: string })[] = data ? JSON.parse(data) : [];
+    const idx = logs.findIndex((l) => l.date === entry.date);
+    if (idx >= 0) logs[idx] = entry;
+    else logs.push(entry);
+    logs.sort((a, b) => a.date.localeCompare(b.date));
+    await AsyncStorage.setItem(key, JSON.stringify(logs));
+  } catch (e) {
+    console.error(`Failed to save log for ${key}:`, e);
+  }
+}
+
+export async function getGenericLogs<T>(key: string): Promise<T[]> {
+  try {
+    const data = await AsyncStorage.getItem(key);
+    return data ? JSON.parse(data) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+export const STORAGE_KEYS = KEYS;
+
+// ─── Storage Helpers ───
+export async function saveAnemiaLog(entry: AnemiaLogEntry): Promise<void> {
+  await saveGenericLog(KEYS.ANEMIA_LOGS, entry);
+}
+
+export async function getAnemiaLogs(): Promise<AnemiaLogEntry[]> {
+  return getGenericLogs(KEYS.ANEMIA_LOGS);
+}
+
+export async function saveGlucoseLog(entry: GlucoseLogEntry): Promise<void> {
+  await saveGenericLog(KEYS.GLUCOSE_LOGS, entry);
+}
+
+export async function getGlucoseLogs(): Promise<GlucoseLogEntry[]> {
+  return getGenericLogs(KEYS.GLUCOSE_LOGS);
+}
+
+export async function saveSkinLog(entry: SkinLogEntry): Promise<void> {
+  await saveGenericLog(KEYS.SKIN_LOGS, entry);
+}
+
+export async function getSkinLogs(): Promise<SkinLogEntry[]> {
+  return getGenericLogs(KEYS.SKIN_LOGS);
+}
+
+export async function saveMoodLog(entry: MoodLogEntry): Promise<void> {
+  await saveGenericLog(KEYS.MOOD_LOGS, entry);
+}
+
+export async function getMoodLogs(): Promise<MoodLogEntry[]> {
+  return getGenericLogs(KEYS.MOOD_LOGS);
+}
+
+export async function savePeriodLog(entry: PeriodLogEntry): Promise<void> {
+  await saveGenericLog(KEYS.PERIOD_LOGS, entry);
+}
+
+export async function getPeriodLogs(): Promise<PeriodLogEntry[]> {
+  return getGenericLogs(KEYS.PERIOD_LOGS);
 }
 
 export async function getTodayLog(): Promise<AnemiaLogEntry | null> {
