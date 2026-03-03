@@ -194,3 +194,61 @@ export function getTimeAgo(isoString: string): string {
     year: "numeric",
   });
 }
+
+// ─── Blood Pressure Firestore CRUD ───
+
+export interface BPReading {
+  id?: string;
+  userId: string;
+  systolic: number;
+  diastolic: number;
+  pulse: number;
+  position: "Sitting" | "Standing" | "Lying down";
+  arm: "Left" | "Right";
+  symptoms: string[];
+  stressLevel: "Low" | "Medium" | "High";
+  notes: string;
+  category: string;
+  alertStatus: "green" | "orange" | "red";
+  timestamp: string; // ISO String
+}
+
+export async function saveBPReading(reading: Omit<BPReading, "userId">): Promise<void> {
+  try {
+    const user = auth.currentUser;
+    if (!user) throw new Error("User not authenticated");
+
+    const newReadingRef = doc(collection(db, "bloodPressure"));
+    await setDoc(newReadingRef, {
+      ...reading,
+      userId: user.uid,
+    });
+  } catch (e) {
+    console.error("Failed to save BP reading to Firestore:", e);
+    throw e;
+  }
+}
+
+export async function getBPReadings(): Promise<BPReading[]> {
+  try {
+    const user = auth.currentUser;
+    if (!user) return [];
+
+    const bpQuery = query(
+      collection(db, "bloodPressure"),
+      where("userId", "==", user.uid),
+      orderBy("timestamp", "desc")
+    );
+    const querySnapshot = await getDocs(bpQuery);
+
+    const readings: BPReading[] = [];
+    querySnapshot.forEach((docSnap) => {
+      readings.push({ id: docSnap.id, ...docSnap.data() } as BPReading);
+    });
+
+    return readings;
+  } catch (e) {
+    console.error("Failed to load BP readings from Firestore:", e);
+    return [];
+  }
+}

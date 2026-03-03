@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   View,
   Text,
@@ -6,480 +6,426 @@ import {
   Pressable,
   TextInput,
   Alert,
-  Linking,
+  Modal,
+  Dimensions,
+  ActivityIndicator,
 } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { LineChart } from "react-native-chart-kit";
 
 import {
-  BPLogEntry,
-  BPInsights,
-  getBPLogs,
-  getTodayBPLog,
-  saveBPLog,
-  generateBPInsights,
-  computeBPScore,
-  getToday,
-} from "@/utils/trackerData";
-import TriageZoneCard from "@/components/TriageZoneCard";
+  saveBPReading,
+  getBPReadings,
+  type BPReading,
+} from "@/services/healthService";
+import {
+  classifyBP,
+  calculateAverages,
+  groupReadingsByDate,
+  type BPCategory,
+  type AlertStatus,
+} from "@/utils/bpLogic";
+import MultiSelect from "@/components/MultiSelect";
 import SegmentedSelector from "@/components/SegmentedSelector";
 
+const SCREEN_WIDTH = Dimensions.get("window").width;
+
 export default function BPTrackerScreen() {
-  const [systolic, setSystolic] = useState<string>("");
-  const [diastolic, setDiastolic] = useState<string>("");
-  const [pulse, setPulse] = useState<string>("");
-  const [position, setPosition] = useState<BPLogEntry["position"]>("Sitting");
-  const [arm, setArm] = useState<BPLogEntry["arm"]>("Left");
-  const [rested, setRested] = useState<boolean>(true);
+  const [readings, setReadings] = useState<BPReading[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showEntryForm, setShowEntryForm] = useState(false);
+  const [chartType, setChartType] = useState<"Weekly" | "Monthly">("Weekly");
 
-  const [headache, setHeadache] = useState<BPLogEntry["headache"]>("none");
-  const [vision, setVision] = useState<BPLogEntry["vision"]>("normal");
-  const [chestBreathing, setChestBreathing] =
-    useState<BPLogEntry["chestBreathing"]>("none");
-  const [neurological, setNeurological] =
-    useState<BPLogEntry["neurological"]>("none");
-
-  const [highSalt, setHighSalt] = useState<boolean>(false);
-  const [tookMeds, setTookMeds] = useState<boolean>(true);
-  const [stressLevel, setStressLevel] = useState<number>(5);
-  const [isPregnant, setIsPregnant] = useState<boolean>(false);
-  const [swelling, setSwelling] = useState<boolean>(false);
-  const [bellyPain, setBellyPain] = useState<boolean>(false);
-  const [notes, setNotes] = useState<string>("");
-
-  const [insights, setInsights] = useState<BPInsights | null>(null);
-  const [hasLoggedToday, setHasLoggedToday] = useState(false);
+  // Form State
+  const [systolic, setSystolic] = useState("");
+  const [diastolic, setDiastolic] = useState("");
+  const [pulse, setPulse] = useState("");
+  const [position, setPosition] = useState<BPReading["position"]>("Sitting");
+  const [arm, setArm] = useState<BPReading["arm"]>("Left");
+  const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
+  const [stressLevel, setStressLevel] = useState<BPReading["stressLevel"]>("Low");
+  const [notes, setNotes] = useState("");
 
   const loadData = useCallback(async () => {
-    const logs = await getBPLogs();
-    const todayLog = await getTodayBPLog();
-
-    if (todayLog) {
-      setSystolic(String(todayLog.systolic));
-      setDiastolic(String(todayLog.diastolic));
-      setPulse(String(todayLog.pulse));
-      setPosition(todayLog.position || "Sitting");
-      setArm(todayLog.arm || "Left");
-      setRested(todayLog.rested5Min);
-      setHeadache(todayLog.headache);
-      setVision(todayLog.vision);
-      setChestBreathing(todayLog.chestBreathing);
-      setNeurological(todayLog.neurological);
-      setHighSalt(todayLog.highSalt);
-      setTookMeds(todayLog.tookMeds);
-      setStressLevel(todayLog.stressLevel);
-      setIsPregnant(todayLog.isPregnant);
-      if (todayLog.preeclampsiaSwelling !== undefined)
-        setSwelling(todayLog.preeclampsiaSwelling);
-      if (todayLog.preeclampsiaBellyPain !== undefined)
-        setBellyPain(todayLog.preeclampsiaBellyPain);
-      if (todayLog.notes) setNotes(todayLog.notes);
-      setHasLoggedToday(true);
-    }
-
-    if (logs.length > 0) {
-      setInsights(generateBPInsights(logs));
-    }
+    setLoading(true);
+    const data = await getBPReadings();
+    setReadings(data);
+    setLoading(false);
   }, []);
 
   useFocusEffect(
     useCallback(() => {
       loadData();
-    }, [loadData]),
+    }, [loadData])
   );
 
-  const handleSave = async () => {
-    if (!systolic || !diastolic || !pulse) {
-      Alert.alert(
-        "Missing Fields",
-        "Please enter your Systolic, Diastolic, and Pulse readings.",
-      );
-      return;
-    }
+  const isValid = useMemo(() => {
+    const s = parseInt(systolic);
+    const d = parseInt(diastolic);
+    const p = parseInt(pulse);
+    return (
+      s >= 70 && s <= 250 &&
+      d >= 40 && d <= 150 &&
+      p >= 30 && p <= 220
+    );
+  }, [systolic, diastolic, pulse]);
 
-    const entry: BPLogEntry = {
-      date: getToday(),
+  const handleSave = async () => {
+    if (!isValid) return;
+
+    const classification = classifyBP(parseInt(systolic), parseInt(diastolic));
+    const now = new Date();
+
+    const reading: Omit<BPReading, "userId"> = {
       systolic: parseInt(systolic),
       diastolic: parseInt(diastolic),
       pulse: parseInt(pulse),
       position,
       arm,
-      rested5Min: rested,
-      headache,
-      vision,
-      chestBreathing,
-      neurological,
-      highSalt,
-      tookMeds,
+      symptoms: selectedSymptoms,
       stressLevel,
-      isPregnant,
-      preeclampsiaSwelling: swelling,
-      preeclampsiaBellyPain: bellyPain,
       notes,
-      timestamp: new Date().toISOString(),
+      category: classification.category,
+      alertStatus: classification.alertStatus,
+      timestamp: now.toISOString(),
     };
 
-    await saveBPLog(entry);
-    Alert.alert("Success", "Daily BP log saved successfully!");
-    loadData();
-  };
+    try {
+      await saveBPReading(reading);
 
-  const callEmergency = () => {
-    Linking.openURL("tel:102"); // Example emergency number for India (Ambulance)
-  };
+      if (classification.category === "Crisis") {
+        Alert.alert(
+          "🚨 EMERGENCY",
+          "Hypertensive Crisis detected! Seek medical attention immediately.",
+          [{ text: "OK" }]
+        );
+      } else {
+        Alert.alert("Success", "Reading saved successfully!");
+      }
 
-  const getCategoryColor = (cat: string) => {
-    switch (cat) {
-      case "Normal":
-        return "#10b981";
-      case "Elevated":
-        return "#f59e0b";
-      case "Stage 1":
-        return "#f97316";
-      case "Stage 2":
-        return "#ef4444";
-      case "Crisis":
-        return "#b91c1c";
-      case "Low":
-        return "#3b82f6";
-      default:
-        return "#64748b";
+      setShowEntryForm(false);
+      resetForm();
+      loadData();
+    } catch (e) {
+      Alert.alert("Error", "Failed to save reading. Please try again.");
     }
   };
+
+  const resetForm = () => {
+    setSystolic("");
+    setDiastolic("");
+    setPulse("");
+    setPosition("Sitting");
+    setArm("Left");
+    setSelectedSymptoms([]);
+    setStressLevel("Low");
+    setNotes("");
+  };
+
+  const latestReading = readings[0];
+  const averages = useMemo(() => calculateAverages(readings), [readings]);
+
+  const chartData = useMemo(() => {
+    const filteredReadings = chartType === "Weekly"
+      ? readings.slice(0, 7).reverse()
+      : readings.slice(0, 30).reverse();
+
+    if (filteredReadings.length === 0) return null;
+
+    return {
+      labels: filteredReadings.map(r => new Date(r.timestamp).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })),
+      datasets: [
+        {
+          data: filteredReadings.map(r => r.systolic),
+          color: (opacity = 1) => `rgba(236, 72, 153, ${opacity})`, // Pink
+          strokeWidth: 2
+        },
+        {
+          data: filteredReadings.map(r => r.diastolic),
+          color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`, // Blue
+          strokeWidth: 2
+        }
+      ],
+      legend: ["Systolic", "Diastolic"]
+    };
+  }, [readings, chartType]);
+
+  const getAlertColor = (status: string) => {
+    switch (status) {
+      case "green": return "#10b981";
+      case "orange": return "#f59e0b";
+      case "red": return "#ef4444";
+      default: return "#64748b";
+    }
+  };
+
+  if (loading) {
+    return (
+      <View className="flex-1 items-center justify-center bg-white">
+        <ActivityIndicator size="large" color="#ec4899" />
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-slate-50">
       <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <View className="flex-row items-center mt-6 mb-8">
-          <Pressable onPress={() => router.back()} className="mr-4">
-            <MaterialIcons name="arrow-back" size={24} color="#334155" />
+        <View className="flex-row items-center justify-between mt-6 mb-8">
+          <View className="flex-row items-center">
+            <Pressable onPress={() => router.back()} className="mr-4">
+              <MaterialIcons name="arrow-back" size={24} color="#334155" />
+            </Pressable>
+            <Text className="text-2xl font-bold text-slate-900">BP Tracker</Text>
+          </View>
+          <Pressable
+            onPress={() => setShowEntryForm(true)}
+            className="bg-primary px-4 py-2 rounded-full shadow-sm"
+          >
+            <Text className="text-white font-bold">+ New</Text>
           </Pressable>
-          <Text className="text-2xl font-bold text-slate-900">BP Tracker</Text>
         </View>
 
-        {/* Categories / Insights Table */}
-        {insights && (
-          <View className="mb-8">
-            <TriageZoneCard
-              zone={
-                insights.triageZone === "Yellow"
-                  ? "Amber"
-                  : insights.triageZone === "Orange"
-                    ? "Amber"
-                    : insights.triageZone
-              }
-              message={insights.triageMessage}
-              suggestions={insights.triageSuggestions}
-            />
-
-            <View className="flex-row items-center justify-between bg-white p-4 rounded-xl mt-4 border border-slate-100 shadow-sm">
-              <Text className="text-slate-600 font-bold">
-                Clinical Category:
-              </Text>
+        {/* Latest Reading Card */}
+        {latestReading && (
+          <View className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 mb-6">
+            <View className="flex-row justify-between items-start mb-4">
+              <View>
+                <Text className="text-slate-500 text-xs font-bold uppercase tracking-wider">Latest Reading</Text>
+                <Text className="text-3xl font-bold text-slate-900 mt-1">
+                  {latestReading.systolic}/{latestReading.diastolic} <Text className="text-lg font-normal text-slate-400">mmHg</Text>
+                </Text>
+              </View>
               <View
-                style={{ backgroundColor: getCategoryColor(insights.category) }}
+                style={{ backgroundColor: getAlertColor(latestReading.alertStatus) }}
                 className="px-3 py-1 rounded-full"
               >
-                <Text className="text-white font-bold text-xs">
-                  {insights.category}
+                <Text className="text-white font-bold text-xs">{latestReading.category}</Text>
+              </View>
+            </View>
+            <View className="flex-row items-center gap-4 text-slate-500">
+              <View className="flex-row items-center">
+                <Ionicons name="heart" size={16} color="#ef4444" />
+                <Text className="ml-1 text-sm font-medium">{latestReading.pulse} BPM</Text>
+              </View>
+              <View className="flex-row items-center">
+                <Ionicons name="time" size={16} color="#64748b" />
+                <Text className="ml-1 text-sm font-medium">
+                  {new Date(latestReading.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </Text>
               </View>
             </View>
-
-            {/* Averages Section */}
-            <View className="bg-slate-900 rounded-2xl p-6 mt-4">
-              <Text className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-4">
-                Averages & Trends
-              </Text>
-              <View className="flex-row gap-6">
-                <View className="flex-1">
-                  <Text className="text-white text-2xl font-bold">
-                    {insights.dailyAvg.systolic}/{insights.dailyAvg.diastolic}
-                  </Text>
-                  <Text className="text-slate-400 text-[10px] uppercase font-bold">
-                    Today's Avg
-                  </Text>
-                </View>
-                <View className="flex-1 border-l border-slate-800 pl-6">
-                  <Text className="text-white text-2xl font-bold">
-                    {insights.weekAvg.systolic}/{insights.weekAvg.diastolic}
-                  </Text>
-                  <Text className="text-slate-400 text-[10px] uppercase font-bold">
-                    Weekly Avg
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            {insights.triageZone === "Red" && (
-              <Pressable
-                onPress={callEmergency}
-                className="mt-4 bg-red-600 p-4 rounded-xl flex-row items-center justify-center gap-2 shadow-lg shadow-red-200"
-              >
-                <MaterialIcons name="phone" size={24} color="white" />
-                <Text className="text-white font-bold text-lg uppercase">
-                  Get Emergency Help
-                </Text>
-              </Pressable>
-            )}
           </View>
         )}
 
-        {/* Vitals Section */}
-        <View className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 mb-6">
-          <View className="flex-row items-center gap-2 mb-6">
-            <MaterialIcons name="monitor-heart" size={20} color="#ec4899" />
-            <Text className="text-lg font-bold text-slate-800">
-              Mandatory Vitals
+        {/* Statistics Grid */}
+        <View className="flex-row gap-4 mb-8">
+          <View className="flex-1 bg-slate-900 p-5 rounded-3xl">
+            <Text className="text-slate-400 text-[10px] font-bold uppercase mb-1">Weekly Avg</Text>
+            <Text className="text-white text-xl font-bold">
+              {averages.avgSystolic}/{averages.avgDiastolic}
             </Text>
           </View>
+          <View className="flex-1 bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
+            <Text className="text-slate-500 text-[10px] font-bold uppercase mb-1">Avg Pulse</Text>
+            <Text className="text-slate-900 text-xl font-bold">{averages.avgPulse} BPM</Text>
+          </View>
+        </View>
 
-          <View className="flex-row gap-4 mb-6">
-            <View className="flex-1">
-              <Text className="text-xs font-semibold text-slate-500 mb-2 uppercase">
-                Systolic (mmHg)
-              </Text>
-              <TextInput
-                className="bg-slate-50 p-4 rounded-xl text-xl font-bold text-slate-900 border border-slate-100"
-                keyboardType="numeric"
-                value={systolic}
-                onChangeText={setSystolic}
-                placeholder="120"
-              />
-            </View>
-            <View className="flex-1">
-              <Text className="text-xs font-semibold text-slate-500 mb-2 uppercase">
-                Diastolic (mmHg)
-              </Text>
-              <TextInput
-                className="bg-slate-50 p-4 rounded-xl text-xl font-bold text-slate-900 border border-slate-100"
-                keyboardType="numeric"
-                value={diastolic}
-                onChangeText={setDiastolic}
-                placeholder="80"
-              />
+        {/* Trend Chart */}
+        <View className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 mb-8">
+          <View className="flex-row justify-between items-center mb-6">
+            <Text className="text-lg font-bold text-slate-800">BP Trend</Text>
+            <View className="flex-row bg-slate-100 rounded-full p-1">
+              <Pressable
+                onPress={() => setChartType("Weekly")}
+                className={`px-3 py-1 rounded-full ${chartType === "Weekly" ? "bg-white shadow-sm" : ""}`}
+              >
+                <Text className={`text-xs font-bold ${chartType === "Weekly" ? "text-slate-900" : "text-slate-500"}`}>Weekly</Text>
+              </Pressable>
+              <Pressable
+                onPress={() => setChartType("Monthly")}
+                className={`px-3 py-1 rounded-full ${chartType === "Monthly" ? "bg-white shadow-sm" : ""}`}
+              >
+                <Text className={`text-xs font-bold ${chartType === "Monthly" ? "text-slate-900" : "text-slate-500"}`}>Monthly</Text>
+              </Pressable>
             </View>
           </View>
 
-          <View className="mb-6">
-            <Text className="text-xs font-semibold text-slate-500 mb-2 uppercase">
-              Pulse Rate (BPM)
-            </Text>
-            <TextInput
-              className="bg-slate-50 p-4 rounded-xl text-xl font-bold text-slate-900 border border-slate-100"
-              keyboardType="numeric"
-              value={pulse}
-              onChangeText={setPulse}
-              placeholder="72"
+          {chartData ? (
+            <LineChart
+              data={chartData}
+              width={SCREEN_WIDTH - 88}
+              height={220}
+              chartConfig={{
+                backgroundColor: "#ffffff",
+                backgroundGradientFrom: "#ffffff",
+                backgroundGradientTo: "#ffffff",
+                decimalPlaces: 0,
+                color: (opacity = 1) => `rgba(100, 116, 139, ${opacity})`,
+                labelColor: (opacity = 1) => `rgba(100, 116, 139, ${opacity})`,
+                style: { borderRadius: 16 },
+                propsForDots: { r: "4", strokeWidth: "2", stroke: "#fff" }
+              }}
+              bezier
+              style={{ marginVertical: 8, borderRadius: 16 }}
             />
-          </View>
-
-          <SegmentedSelector
-            label="Did you rest (quietly) for 5 mins?"
-            options={[
-              { label: "Yes", value: "yes", color: "#10b981" },
-              { label: "No", value: "no", color: "#f59e0b" },
-            ]}
-            selectedValue={rested ? "yes" : "no"}
-            onSelect={(v) => {
-              if (v === "no")
-                Alert.alert(
-                  "Accuracy Tip",
-                  "Resting improves measurement accuracy. Try to sit quietly for 5 minutes before your next check.",
-                );
-              setRested(v === "yes");
-            }}
-          />
-        </View>
-
-        {/* Contextual Section */}
-        <View className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 mb-6">
-          <View className="flex-row items-center gap-2 mb-6">
-            <MaterialIcons name="chair" size={20} color="#ec4899" />
-            <Text className="text-lg font-bold text-slate-800">
-              Measurement Context
-            </Text>
-          </View>
-
-          <SegmentedSelector
-            label="Measurement Position"
-            options={[
-              { label: "Sitting", value: "Sitting" },
-              { label: "Standing", value: "Standing" },
-              { label: "Lying Down", value: "Lying Down" },
-            ]}
-            selectedValue={position}
-            onSelect={(v) => setPosition(v as any)}
-          />
-
-          <View className="h-6" />
-
-          <SegmentedSelector
-            label="Which arm was used?"
-            options={[
-              { label: "Left Arm", value: "Left" },
-              { label: "Right Arm", value: "Right" },
-            ]}
-            selectedValue={arm}
-            onSelect={(v) => setArm(v as any)}
-          />
-        </View>
-
-        {/* Symptoms Section */}
-        <View className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 mb-6">
-          <View className="flex-row items-center gap-2 mb-6">
-            <MaterialIcons name="warning" size={20} color="#ec4899" />
-            <Text className="text-lg font-bold text-slate-800">
-              Symptom Log (Optional)
-            </Text>
-          </View>
-
-          <SegmentedSelector
-            label="Headache?"
-            options={[
-              { label: "None", value: "none" },
-              { label: "Mild", value: "mild", color: "#f59e0b" },
-              { label: "Severe", value: "severe", color: "#ef4444" },
-              { label: "Severe+", value: "thunderclap", color: "#b91c1c" },
-            ]}
-            selectedValue={headache}
-            onSelect={(v) => setHeadache(v as any)}
-          />
-
-          <View className="h-4" />
-
-          <SegmentedSelector
-            label="Vision Changes"
-            options={[
-              { label: "Normal", value: "normal" },
-              { label: "Blurry", value: "blurry", color: "#f59e0b" },
-              { label: "Spots", value: "spots", color: "#ef4444" },
-            ]}
-            selectedValue={vision}
-            onSelect={(v) => setVision(v as any)}
-          />
-
-          <View className="h-4" />
-
-          <SegmentedSelector
-            label="Chest/Breathing"
-            options={[
-              { label: "Normal", value: "none" },
-              { label: "Shortness", value: "shortness", color: "#f59e0b" },
-              { label: "Pain", value: "pain", color: "#ef4444" },
-            ]}
-            selectedValue={chestBreathing}
-            onSelect={(v) => setChestBreathing(v as any)}
-          />
-        </View>
-
-        {/* Women Specific Section */}
-        <View className="bg-pink-50 rounded-2xl p-6 border border-pink-100 mb-6">
-          <View className="flex-row items-center gap-2 mb-6">
-            <MaterialIcons name="pregnant-woman" size={20} color="#db2777" />
-            <Text className="text-lg font-bold text-pink-900">
-              Women's Health
-            </Text>
-          </View>
-
-          <SegmentedSelector
-            label="Are you pregnant?"
-            options={[
-              { label: "No", value: "no" },
-              { label: "Yes", value: "yes", color: "#db2777" },
-            ]}
-            selectedValue={isPregnant ? "yes" : "no"}
-            onSelect={(v) => setIsPregnant(v === "yes")}
-          />
-
-          {isPregnant && (
-            <View className="mt-4 pt-4 border-t border-pink-200">
-              <SegmentedSelector
-                label="Swelling in face or hands?"
-                options={[
-                  { label: "No", value: "no" },
-                  { label: "Yes", value: "yes", color: "#ef4444" },
-                ]}
-                selectedValue={swelling ? "yes" : "no"}
-                onSelect={(v) => setSwelling(v === "yes")}
-              />
-              <View className="h-4" />
-              <SegmentedSelector
-                label="Pain in upper right belly?"
-                options={[
-                  { label: "No", value: "no" },
-                  { label: "Yes", value: "yes", color: "#ef4444" },
-                ]}
-                selectedValue={bellyPain ? "yes" : "no"}
-                onSelect={(v) => setBellyPain(v === "yes")}
-              />
+          ) : (
+            <View className="h-40 items-center justify-center">
+              <Text className="text-slate-400">Not enough data for trend chart</Text>
             </View>
           )}
         </View>
 
-        {/* Extra Context */}
-        <View className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 mb-6">
-          <Text className="text-lg font-bold text-slate-800 mb-6">
-            Additional Context
-          </Text>
-
-          <View className="mb-6">
-            <View className="flex-row justify-between mb-2">
-              <Text className="text-xs font-semibold text-slate-500 uppercase">
-                Stress Level
-              </Text>
-              <Text className="text-xs font-bold text-slate-700">
-                {stressLevel}/10
+        {/* History List Header */}
+        <Text className="text-lg font-bold text-slate-800 mb-4">Reading History</Text>
+        {readings.map((r, i) => (
+          <View key={i} className="bg-white p-4 rounded-2xl mb-3 border border-slate-100 flex-row justify-between items-center">
+            <View>
+              <Text className="text-slate-900 font-bold">{r.systolic}/{r.diastolic} mmHg</Text>
+              <Text className="text-slate-500 text-xs mt-1">
+                {new Date(r.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
               </Text>
             </View>
-            <View className="flex-row gap-1">
-              {[...Array(10)].map((_, i) => (
-                <Pressable
-                  key={i}
-                  onPress={() => setStressLevel(i + 1)}
-                  className={`flex-1 h-2 rounded-full ${stressLevel >= i + 1 ? "bg-pink-500" : "bg-slate-100"}`}
-                />
-              ))}
+            <View style={{ backgroundColor: getAlertColor(r.alertStatus) + "20" }} className="px-2 py-1 rounded-md">
+              <Text style={{ color: getAlertColor(r.alertStatus) }} className="text-[10px] font-bold uppercase">{r.category}</Text>
             </View>
           </View>
+        ))}
 
-          <Text className="text-xs font-semibold text-slate-500 mb-2 uppercase">
-            Notes
-          </Text>
-          <TextInput
-            className="bg-slate-50 p-4 rounded-xl text-slate-900 border border-slate-100"
-            multiline
-            numberOfLines={3}
-            value={notes}
-            onChangeText={setNotes}
-            placeholder="Write any observation or dietary notes here..."
-            textAlignVertical="top"
-          />
-        </View>
-
-        {/* Save Button */}
-        <Pressable
-          onPress={handleSave}
-          className="bg-primary p-5 rounded-2xl mb-8 items-center shadow-lg shadow-pink-200"
-        >
-          <Text className="text-white font-bold text-lg">
-            Save Blood Pressure Log
-          </Text>
-        </Pressable>
-
-        {/* Disclaimer */}
-        <View className="bg-slate-100 p-6 rounded-2xl mb-12">
-          <Text className="text-slate-500 text-xs text-center leading-5 italic">
-            This app tracks trends and provides information based on clinical
-            guidelines. It is not a substitute for clinical judgment.
-            {"\n"}
-            {"\n"}
-            If you are in immediate distress, call emergency services.
-          </Text>
-        </View>
+        <View className="h-10" />
       </ScrollView>
+
+      {/* Entry Form Modal */}
+      <Modal
+        visible={showEntryForm}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowEntryForm(false)}
+      >
+        <SafeAreaView className="flex-1 bg-white">
+          <View className="flex-1 px-6">
+            <View className="flex-row justify-between items-center py-6 border-b border-slate-100 mb-6">
+              <Text className="text-xl font-bold text-slate-900">New Reading</Text>
+              <Pressable onPress={() => { setShowEntryForm(false); resetForm(); }}>
+                <Ionicons name="close" size={28} color="#64748b" />
+              </Pressable>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {/* Vitals Section */}
+              <View className="flex-row gap-4 mb-6">
+                <View className="flex-1">
+                  <Text className="text-xs font-semibold text-slate-500 mb-2 uppercase">Systolic</Text>
+                  <TextInput
+                    className={`bg-slate-50 p-4 rounded-2xl text-xl font-bold text-slate-900 border ${systolic && (parseInt(systolic) < 70 || parseInt(systolic) > 250) ? 'border-red-500' : 'border-slate-100'}`}
+                    keyboardType="numeric"
+                    value={systolic}
+                    onChangeText={setSystolic}
+                    placeholder="120"
+                  />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-xs font-semibold text-slate-500 mb-2 uppercase">Diastolic</Text>
+                  <TextInput
+                    className={`bg-slate-50 p-4 rounded-2xl text-xl font-bold text-slate-900 border ${diastolic && (parseInt(diastolic) < 40 || parseInt(diastolic) > 150) ? 'border-red-500' : 'border-slate-100'}`}
+                    keyboardType="numeric"
+                    value={diastolic}
+                    onChangeText={setDiastolic}
+                    placeholder="80"
+                  />
+                </View>
+              </View>
+
+              <View className="mb-6">
+                <Text className="text-xs font-semibold text-slate-500 mb-2 uppercase">Pulse Rate (BPM)</Text>
+                <TextInput
+                  className={`bg-slate-50 p-4 rounded-2xl text-xl font-bold text-slate-900 border ${pulse && (parseInt(pulse) < 30 || parseInt(pulse) > 220) ? 'border-red-500' : 'border-slate-100'}`}
+                  keyboardType="numeric"
+                  value={pulse}
+                  onChangeText={setPulse}
+                  placeholder="72"
+                />
+              </View>
+
+              {/* Context Fields */}
+              <SegmentedSelector
+                label="Measurement Position"
+                options={[
+                  { label: "Sitting", value: "Sitting" },
+                  { label: "Standing", value: "Standing" },
+                  { label: "Lying down", value: "Lying down" },
+                ]}
+                selectedValue={position}
+                onSelect={(v) => setPosition(v as any)}
+              />
+
+              <View className="h-6" />
+
+              <SegmentedSelector
+                label="Measurement Arm"
+                options={[
+                  { label: "Left", value: "Left" },
+                  { label: "Right", value: "Right" },
+                ]}
+                selectedValue={arm}
+                onSelect={(v) => setArm(v as any)}
+              />
+
+              <View className="h-6" />
+
+              <MultiSelect
+                label="Symptoms"
+                options={["Headache", "Dizziness", "Chest Pain", "Shortness of Breath", "None"]}
+                selectedValues={selectedSymptoms}
+                onToggle={(val) => {
+                  if (val === "None") setSelectedSymptoms(["None"]);
+                  else {
+                    const filtered = selectedSymptoms.filter(s => s !== "None");
+                    if (filtered.includes(val)) setSelectedSymptoms(filtered.filter(s => s !== val));
+                    else setSelectedSymptoms([...filtered, val]);
+                  }
+                }}
+              />
+
+              <SegmentedSelector
+                label="Stress Level"
+                options={[
+                  { label: "Low", value: "Low" },
+                  { label: "Medium", value: "Medium" },
+                  { label: "High", value: "High" },
+                ]}
+                selectedValue={stressLevel}
+                onSelect={(v) => setStressLevel(v as any)}
+              />
+
+              <View className="h-6" />
+
+              <Text className="text-xs font-semibold text-slate-500 mb-2 uppercase">Notes (Max 300 chars)</Text>
+              <TextInput
+                className="bg-slate-50 p-4 rounded-2xl text-slate-900 border border-slate-100"
+                multiline
+                maxLength={300}
+                numberOfLines={3}
+                value={notes}
+                onChangeText={setNotes}
+                placeholder="Any special observations..."
+                textAlignVertical="top"
+              />
+
+              <Pressable
+                onPress={handleSave}
+                disabled={!isValid}
+                className={`p-5 rounded-2xl my-10 items-center shadow-lg ${isValid ? 'bg-primary' : 'bg-slate-300'}`}
+              >
+                <Text className="text-white font-bold text-lg">Save Reading</Text>
+              </Pressable>
+            </ScrollView>
+          </View>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }

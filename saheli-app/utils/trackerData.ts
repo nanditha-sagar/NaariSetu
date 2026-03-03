@@ -159,7 +159,29 @@ export interface MoodInsights {
   triageZone: "Green" | "Yellow" | "Orange" | "Red";
   triageMessage: string;
   triageSuggestions: string[];
+  stats?: {
+    weeklyAvg: number;
+    topMood: string;
+    sleepCorrelation: string;
+    cycleCorrelation?: string;
+    stressPattern: string;
+  };
 }
+
+export const MOOD_SUGGESTIONS = {
+  Sad: ["Walk", "Call someone", "Music", "3 gratitudes", "Warm shower", "PMS → Be gentle, it's hormonal."],
+  Angry: ["4-7-8 breathe", "Pause", "Stretch", "Water", "Avoid reacting"],
+  Anxious: ["Box breathing", "Less caffeine", "Write worries", "Meditate", "5-4-3-2-1"],
+  Tired: ["Sleep check", "Water", "Snack", "10-min nap", "Sunlight"],
+  Happy: ["Keep routine", "Note why", "Gratitude", "Share positivity"],
+};
+
+export const MOOD_CARE_DATA = [
+  { activity: "Do a 5-minute stretch", affirmation: "I am doing my best.", tip: "Drink a glass of water now." },
+  { activity: "Write down 3 things you're grateful for", affirmation: "I am enough.", tip: "Take 3 deep breaths." },
+  { activity: "Listen to your favorite song", affirmation: "I am resilient.", tip: "Step outside for fresh air." },
+  { activity: "Organize one small space", affirmation: "I am at peace.", tip: "Dim the lights for 10 minutes." },
+];
 
 // ─── Period Types ───
 export interface PeriodLogEntry {
@@ -201,11 +223,11 @@ export const SEVERITY_OPTIONS: {
   score: number;
   color: string;
 }[] = [
-  { value: "none", label: "None", score: 0, color: "#10b981" },
-  { value: "mild", label: "Mild", score: 1, color: "#f59e0b" },
-  { value: "moderate", label: "Moderate", score: 2, color: "#f97316" },
-  { value: "severe", label: "Severe", score: 3, color: "#ef4444" },
-];
+    { value: "none", label: "None", score: 0, color: "#10b981" },
+    { value: "mild", label: "Mild", score: 1, color: "#f59e0b" },
+    { value: "moderate", label: "Moderate", score: 2, color: "#f97316" },
+    { value: "severe", label: "Severe", score: 3, color: "#ef4444" },
+  ];
 
 export const FOOD_FREQUENCY_OPTIONS = [
   { value: "daily", label: "Daily", score: 0 },
@@ -270,14 +292,14 @@ export function generateAnemiaInsights(logs: AnemiaLogEntry[]): AnemiaInsights {
   const weekAvg =
     thisWeekScores.length > 0
       ? Math.round(
-          thisWeekScores.reduce((a, b) => a + b, 0) / thisWeekScores.length,
-        )
+        thisWeekScores.reduce((a, b) => a + b, 0) / thisWeekScores.length,
+      )
       : 0;
   const prevWeekAvg =
     prevWeekScores.length > 0
       ? Math.round(
-          prevWeekScores.reduce((a, b) => a + b, 0) / prevWeekScores.length,
-        )
+        prevWeekScores.reduce((a, b) => a + b, 0) / prevWeekScores.length,
+      )
       : 0;
 
   // Risk level
@@ -667,7 +689,35 @@ export function generateSkinInsights(entry: SkinLogEntry): SkinInsights {
 }
 
 // ─── Mood Logic ───
-export function generateMoodInsights(entry: MoodLogEntry): MoodInsights {
+export function generateMoodInsights(entry: MoodLogEntry, allLogs: MoodLogEntry[] = []): MoodInsights {
+  // Stats calculation
+  const weekAgo = new Date();
+  weekAgo.setDate(weekAgo.getDate() - 7);
+  const weekLogs = allLogs.filter(l => new Date(l.date) >= weekAgo);
+
+  const weeklyAvg = weekLogs.length > 0
+    ? Number((weekLogs.reduce((acc, l) => acc + l.valence, 0) / weekLogs.length).toFixed(1))
+    : entry.valence;
+
+  const moodCounts: Record<number, number> = {};
+  weekLogs.forEach(l => {
+    moodCounts[l.valence] = (moodCounts[l.valence] || 0) + 1;
+  });
+  const topMoodVal = Object.entries(moodCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+  const topMood = topMoodVal ? `${topMoodVal}/10` : "No data";
+
+  const sleepIssues = weekLogs.filter(l => l.sleep !== "normal").length;
+  const sleepCorrelation = sleepIssues > 3 ? "High impact from sleep" : "Sleep seems stable";
+
+  const stressPattern = weekLogs.filter(l => l.irritability).length > 3 ? "High irritability pattern" : "Normal stress levels";
+
+  const stats = {
+    weeklyAvg,
+    topMood,
+    sleepCorrelation,
+    stressPattern,
+  };
+
   if (entry.safetyCheck !== "no") {
     return {
       triageZone: "Red",
@@ -677,6 +727,7 @@ export function generateMoodInsights(entry: MoodLogEntry): MoodInsights {
         "Call 988 (Suicide Prevention Hotline) or reach out to a trusted friend.",
         "Resources are available 24/7.",
       ],
+      stats,
     };
   }
 
@@ -696,6 +747,7 @@ export function generateMoodInsights(entry: MoodLogEntry): MoodInsights {
           ? "Postpartum depression is common and treatable. Talk to your OB-GYN."
           : "Action often precedes motivation.",
       ],
+      stats,
     };
   }
 
@@ -707,6 +759,7 @@ export function generateMoodInsights(entry: MoodLogEntry): MoodInsights {
         "Try Box Breathing (4-4-4-4) for 2 minutes.",
         "This feeling might be a natural reaction to stress, not a failure.",
       ],
+      stats,
     };
   }
 
@@ -717,6 +770,7 @@ export function generateMoodInsights(entry: MoodLogEntry): MoodInsights {
       "Capture this moment. Write down one thing you are grateful for.",
       "This builds your 'psychological immune system'.",
     ],
+    stats,
   };
 }
 
