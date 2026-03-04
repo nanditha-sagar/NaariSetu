@@ -15,13 +15,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import {
   MoodLogEntry,
   MoodInsights,
-  getMoodLogs,
-  saveMoodLog,
   generateMoodInsights,
   getToday,
   MOOD_SUGGESTIONS,
   MOOD_CARE_DATA,
 } from "@/utils/trackerData";
+import { getMoodEntries, saveMoodEntry } from "@/services/healthService";
 import TriageZoneCard from "@/components/TriageZoneCard";
 import SegmentedSelector from "@/components/SegmentedSelector";
 
@@ -151,7 +150,7 @@ export default function MoodTrackerScreen() {
   const [insights, setInsights] = useState<MoodInsights | null>(null);
 
   const loadData = useCallback(async () => {
-    const logs = await getMoodLogs();
+    const logs = await getMoodEntries();
     const today = getToday();
     const todayLog = logs.find((l) => l.date === today);
 
@@ -177,34 +176,42 @@ export default function MoodTrackerScreen() {
   );
 
   const handleSave = async () => {
-    const entry: MoodLogEntry = {
-      date: getToday(),
-      valence,
-      anhedonia,
-      anxiety,
-      irritability,
-      sleep,
-      appetite,
-      focus,
-      safetyCheck,
-      isPostpartum,
-      timestamp: new Date().toISOString(),
-    };
+    try {
+      const entry: MoodLogEntry = {
+        date: getToday(),
+        valence,
+        anhedonia,
+        anxiety,
+        irritability,
+        sleep,
+        appetite,
+        focus,
+        safetyCheck,
+        isPostpartum,
+        timestamp: new Date().toISOString(),
+      };
 
-    await saveMoodLog(entry);
-    const logs = await getMoodLogs();
-    setInsights(generateMoodInsights(entry, logs));
-    if (entry.safetyCheck !== "no") {
+      await saveMoodEntry(entry);
+      const logs = await getMoodEntries();
+      setInsights(generateMoodInsights(entry, logs));
+      if (entry.safetyCheck !== "no") {
+        Alert.alert(
+          "Crisis Support",
+          "Please reach out to professional help immediately. You are not alone.",
+          [
+            { text: "Call 988", onPress: () => Linking.openURL("tel:988") },
+            { text: "OK" },
+          ],
+        );
+      } else {
+        Alert.alert("Success", "Mood log saved successfully!");
+        router.navigate("/(tabs)/home");
+      }
+    } catch (e: any) {
       Alert.alert(
-        "Crisis Support",
-        "Please reach out to professional help immediately. You are not alone.",
-        [
-          { text: "Call 988", onPress: () => Linking.openURL("tel:988") },
-          { text: "OK" },
-        ],
+        "Error Saving Log",
+        e.message || "An unexpected error occurred.",
       );
-    } else {
-      Alert.alert("Success", "Mood log saved successfully!");
     }
   };
 

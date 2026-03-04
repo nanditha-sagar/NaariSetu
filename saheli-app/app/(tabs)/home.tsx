@@ -1,5 +1,13 @@
 import React, { useState, useCallback, useMemo } from "react";
-import { View, Text, ScrollView, Pressable, Image, Alert, Linking } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  Pressable,
+  Image,
+  Alert,
+  Linking,
+} from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -7,8 +15,18 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import RiskBadge from "@/components/RiskBadge";
 import HealthTipCard from "@/components/HealthTipCard";
 import { getRandomTip, ScreeningEntry } from "@/utils/data";
-import { getLatestScreening, getTimeAgo, getBPReadings, getGlucoseReadings } from "@/services/healthService";
-import { getPeriodLogs, getMoodLogs, getAnemiaLogs, getToday } from "@/utils/trackerData";
+import {
+  getLatestScreening,
+  getTimeAgo,
+  getBPReadings,
+  getGlucoseReadings,
+} from "@/services/healthService";
+import {
+  getPeriodLogs,
+  getMoodLogs,
+  getAnemiaLogs,
+  getToday,
+} from "@/utils/trackerData";
 
 const TRACKERS = [
   {
@@ -185,11 +203,15 @@ export default function HomeScreen() {
         getAnemiaLogs(),
       ]);
 
-      status["BP"] = bp.some(r => r.timestamp && r.timestamp.split("T")[0] === today);
-      status["glucose"] = glucose.some(r => r.timestamp && r.timestamp.split("T")[0] === today);
-      status["periods"] = periods.some(r => r.date === today);
-      status["mood"] = mood.some(r => r.date === today);
-      status["anemia"] = anemia.some(r => r.date === today);
+      status["BP"] = bp.some(
+        (r) => r.timestamp && r.timestamp.split("T")[0] === today,
+      );
+      status["glucose"] = glucose.some(
+        (r) => r.timestamp && r.timestamp.split("T")[0] === today,
+      );
+      status["periods"] = periods.some((r) => r.date === today);
+      status["mood"] = mood.some((r) => r.date === today);
+      status["anemia"] = anemia.some((r) => r.date === today);
 
       setLoggedStatus(status);
     } catch (e) {
@@ -436,14 +458,6 @@ export default function HomeScreen() {
                   <Text className="text-xl">{t.emoji}</Text>
                 </View>
 
-                {loggedStatus[t.id] && (
-                  <View
-                    className="absolute top-2 right-2 w-5 h-5 rounded-full bg-emerald-500 items-center justify-center border-2 border-white"
-                  >
-                    <MaterialIcons name="check" size={12} color="white" />
-                  </View>
-                )}
-
                 <Text className="text-xs font-semibold text-slate-700">
                   {t.label}
                 </Text>
@@ -529,9 +543,7 @@ export default function HomeScreen() {
                     className="absolute inset-0 w-full h-full"
                     resizeMode="cover"
                   />
-                  <View
-                    className="absolute inset-0 items-center justify-center bg-black/20"
-                  >
+                  <View className="absolute inset-0 items-center justify-center bg-black/20">
                     <MaterialIcons
                       name={item.type === "Video" ? "play-circle" : "article"}
                       size={48}

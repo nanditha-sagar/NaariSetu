@@ -100,7 +100,13 @@ export default function GlucoseTrackerScreen() {
       await saveGlucoseReading(entry);
       setHasLoggedToday(true);
       Alert.alert("Saved!", "Glucose log saved successfully!", [
-        { text: "OK", onPress: () => loadData() },
+        {
+          text: "OK",
+          onPress: () => {
+            loadData();
+            router.navigate("/(tabs)/home");
+          },
+        },
       ]);
       setValue("");
       setSymptoms([]);
@@ -126,13 +132,6 @@ export default function GlucoseTrackerScreen() {
           <Text className="text-2xl font-bold text-slate-900">
             Glucose Tracker
           </Text>
-          {hasLoggedToday && (
-            <View className="ml-auto px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100">
-              <Text className="text-[10px] font-bold text-emerald-600">
-                ✓ LOGGED
-              </Text>
-            </View>
-          )}
         </View>
 
         {/* Latest Reading Dashboard */}

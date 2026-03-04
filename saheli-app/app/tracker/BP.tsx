@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { Redirect } from "expo-router";
 import {
   View,
   Text,
@@ -47,14 +48,19 @@ export default function BPTrackerScreen() {
   const [position, setPosition] = useState<BPReading["position"]>("Sitting");
   const [arm, setArm] = useState<BPReading["arm"]>("Left");
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
-  const [stressLevel, setStressLevel] = useState<BPReading["stressLevel"]>("Low");
+  const [stressLevel, setStressLevel] =
+    useState<BPReading["stressLevel"]>("Low");
   const [notes, setNotes] = useState("");
 
   const loadData = useCallback(async () => {
     setLoading(true);
     const data = await getBPReadings();
     setReadings(data);
-    if (data.length > 0 && data[0].timestamp && data[0].timestamp.split("T")[0] === getToday()) {
+    if (
+      data.length > 0 &&
+      data[0].timestamp &&
+      data[0].timestamp.split("T")[0] === getToday()
+    ) {
       setHasLoggedToday(true);
     } else {
       setHasLoggedToday(false);
@@ -65,18 +71,14 @@ export default function BPTrackerScreen() {
   useFocusEffect(
     useCallback(() => {
       loadData();
-    }, [loadData])
+    }, [loadData]),
   );
 
   const isValid = useMemo(() => {
     const s = parseInt(systolic);
     const d = parseInt(diastolic);
     const p = parseInt(pulse);
-    return (
-      s >= 70 && s <= 250 &&
-      d >= 40 && d <= 150 &&
-      p >= 30 && p <= 220
-    );
+    return s >= 70 && s <= 250 && d >= 40 && d <= 150 && p >= 30 && p <= 220;
   }, [systolic, diastolic, pulse]);
 
   const handleSave = async () => {
@@ -106,7 +108,7 @@ export default function BPTrackerScreen() {
         Alert.alert(
           "🚨 EMERGENCY",
           "Hypertensive Crisis detected! Seek medical attention immediately.",
-          [{ text: "OK" }]
+          [{ text: "OK" }],
         );
       } else {
         Alert.alert("Saved!", "Reading saved successfully!");
@@ -116,6 +118,7 @@ export default function BPTrackerScreen() {
       setShowEntryForm(false);
       resetForm();
       loadData();
+      router.navigate("/(tabs)/home");
     } catch (e) {
       Alert.alert("Error", "Failed to save reading. Please try again.");
     }
@@ -136,36 +139,46 @@ export default function BPTrackerScreen() {
   const averages = useMemo(() => calculateAverages(readings), [readings]);
 
   const chartData = useMemo(() => {
-    const filteredReadings = chartType === "Weekly"
-      ? readings.slice(0, 7).reverse()
-      : readings.slice(0, 30).reverse();
+    const filteredReadings =
+      chartType === "Weekly"
+        ? readings.slice(0, 7).reverse()
+        : readings.slice(0, 30).reverse();
 
     if (filteredReadings.length === 0) return null;
 
     return {
-      labels: filteredReadings.map(r => new Date(r.timestamp).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })),
+      labels: filteredReadings.map((r) =>
+        new Date(r.timestamp).toLocaleDateString(undefined, {
+          day: "numeric",
+          month: "short",
+        }),
+      ),
       datasets: [
         {
-          data: filteredReadings.map(r => r.systolic),
+          data: filteredReadings.map((r) => r.systolic),
           color: (opacity = 1) => `rgba(236, 72, 153, ${opacity})`, // Pink
-          strokeWidth: 2
+          strokeWidth: 2,
         },
         {
-          data: filteredReadings.map(r => r.diastolic),
+          data: filteredReadings.map((r) => r.diastolic),
           color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`, // Blue
-          strokeWidth: 2
-        }
+          strokeWidth: 2,
+        },
       ],
-      legend: ["Systolic", "Diastolic"]
+      legend: ["Systolic", "Diastolic"],
     };
   }, [readings, chartType]);
 
   const getAlertColor = (status: string) => {
     switch (status) {
-      case "green": return "#10b981";
-      case "orange": return "#f59e0b";
-      case "red": return "#ef4444";
-      default: return "#64748b";
+      case "green":
+        return "#10b981";
+      case "orange":
+        return "#f59e0b";
+      case "red":
+        return "#ef4444";
+      default:
+        return "#64748b";
     }
   };
 
@@ -186,12 +199,9 @@ export default function BPTrackerScreen() {
             <Pressable onPress={() => router.back()} className="mr-4">
               <MaterialIcons name="arrow-back" size={24} color="#334155" />
             </Pressable>
-            <Text className="text-2xl font-bold text-slate-900">BP Tracker</Text>
-            {hasLoggedToday && (
-              <View className="ml-2 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-100">
-                <Text className="text-[8px] font-bold text-emerald-600">✓ LOGGED</Text>
-              </View>
-            )}
+            <Text className="text-2xl font-bold text-slate-900">
+              BP Tracker
+            </Text>
           </View>
           <Pressable
             onPress={() => setShowEntryForm(true)}
@@ -206,27 +216,41 @@ export default function BPTrackerScreen() {
           <View className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 mb-6">
             <View className="flex-row justify-between items-start mb-4">
               <View>
-                <Text className="text-slate-500 text-xs font-bold uppercase tracking-wider">Latest Reading</Text>
+                <Text className="text-slate-500 text-xs font-bold uppercase tracking-wider">
+                  Latest Reading
+                </Text>
                 <Text className="text-3xl font-bold text-slate-900 mt-1">
-                  {latestReading.systolic}/{latestReading.diastolic} <Text className="text-lg font-normal text-slate-400">mmHg</Text>
+                  {latestReading.systolic}/{latestReading.diastolic}{" "}
+                  <Text className="text-lg font-normal text-slate-400">
+                    mmHg
+                  </Text>
                 </Text>
               </View>
               <View
-                style={{ backgroundColor: getAlertColor(latestReading.alertStatus) }}
+                style={{
+                  backgroundColor: getAlertColor(latestReading.alertStatus),
+                }}
                 className="px-3 py-1 rounded-full"
               >
-                <Text className="text-white font-bold text-xs">{latestReading.category}</Text>
+                <Text className="text-white font-bold text-xs">
+                  {latestReading.category}
+                </Text>
               </View>
             </View>
             <View className="flex-row items-center gap-4 text-slate-500">
               <View className="flex-row items-center">
                 <Ionicons name="heart" size={16} color="#ef4444" />
-                <Text className="ml-1 text-sm font-medium">{latestReading.pulse} BPM</Text>
+                <Text className="ml-1 text-sm font-medium">
+                  {latestReading.pulse} BPM
+                </Text>
               </View>
               <View className="flex-row items-center">
                 <Ionicons name="time" size={16} color="#64748b" />
                 <Text className="ml-1 text-sm font-medium">
-                  {new Date(latestReading.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {new Date(latestReading.timestamp).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </Text>
               </View>
             </View>
@@ -236,14 +260,20 @@ export default function BPTrackerScreen() {
         {/* Statistics Grid */}
         <View className="flex-row gap-4 mb-8">
           <View className="flex-1 bg-slate-900 p-5 rounded-3xl">
-            <Text className="text-slate-400 text-[10px] font-bold uppercase mb-1">Weekly Avg</Text>
+            <Text className="text-slate-400 text-[10px] font-bold uppercase mb-1">
+              Weekly Avg
+            </Text>
             <Text className="text-white text-xl font-bold">
               {averages.avgSystolic}/{averages.avgDiastolic}
             </Text>
           </View>
           <View className="flex-1 bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
-            <Text className="text-slate-500 text-[10px] font-bold uppercase mb-1">Avg Pulse</Text>
-            <Text className="text-slate-900 text-xl font-bold">{averages.avgPulse} BPM</Text>
+            <Text className="text-slate-500 text-[10px] font-bold uppercase mb-1">
+              Avg Pulse
+            </Text>
+            <Text className="text-slate-900 text-xl font-bold">
+              {averages.avgPulse} BPM
+            </Text>
           </View>
         </View>
 
@@ -256,13 +286,21 @@ export default function BPTrackerScreen() {
                 onPress={() => setChartType("Weekly")}
                 className={`px-3 py-1 rounded-full ${chartType === "Weekly" ? "bg-white shadow-sm" : ""}`}
               >
-                <Text className={`text-xs font-bold ${chartType === "Weekly" ? "text-slate-900" : "text-slate-500"}`}>Weekly</Text>
+                <Text
+                  className={`text-xs font-bold ${chartType === "Weekly" ? "text-slate-900" : "text-slate-500"}`}
+                >
+                  Weekly
+                </Text>
               </Pressable>
               <Pressable
                 onPress={() => setChartType("Monthly")}
                 className={`px-3 py-1 rounded-full ${chartType === "Monthly" ? "bg-white shadow-sm" : ""}`}
               >
-                <Text className={`text-xs font-bold ${chartType === "Monthly" ? "text-slate-900" : "text-slate-500"}`}>Monthly</Text>
+                <Text
+                  className={`text-xs font-bold ${chartType === "Monthly" ? "text-slate-900" : "text-slate-500"}`}
+                >
+                  Monthly
+                </Text>
               </Pressable>
             </View>
           </View>
@@ -280,30 +318,51 @@ export default function BPTrackerScreen() {
                 color: (opacity = 1) => `rgba(100, 116, 139, ${opacity})`,
                 labelColor: (opacity = 1) => `rgba(100, 116, 139, ${opacity})`,
                 style: { borderRadius: 16 },
-                propsForDots: { r: "4", strokeWidth: "2", stroke: "#fff" }
+                propsForDots: { r: "4", strokeWidth: "2", stroke: "#fff" },
               }}
               bezier
               style={{ marginVertical: 8, borderRadius: 16 }}
             />
           ) : (
             <View className="h-40 items-center justify-center">
-              <Text className="text-slate-400">Not enough data for trend chart</Text>
+              <Text className="text-slate-400">
+                Not enough data for trend chart
+              </Text>
             </View>
           )}
         </View>
 
         {/* History List Header */}
-        <Text className="text-lg font-bold text-slate-800 mb-4">Reading History</Text>
+        <Text className="text-lg font-bold text-slate-800 mb-4">
+          Reading History
+        </Text>
         {readings.map((r, i) => (
-          <View key={i} className="bg-white p-4 rounded-2xl mb-3 border border-slate-100 flex-row justify-between items-center">
+          <View
+            key={i}
+            className="bg-white p-4 rounded-2xl mb-3 border border-slate-100 flex-row justify-between items-center"
+          >
             <View>
-              <Text className="text-slate-900 font-bold">{r.systolic}/{r.diastolic} mmHg</Text>
+              <Text className="text-slate-900 font-bold">
+                {r.systolic}/{r.diastolic} mmHg
+              </Text>
               <Text className="text-slate-500 text-xs mt-1">
-                {new Date(r.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
+                {new Date(r.timestamp).toLocaleDateString([], {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}
               </Text>
             </View>
-            <View style={{ backgroundColor: getAlertColor(r.alertStatus) + "20" }} className="px-2 py-1 rounded-md">
-              <Text style={{ color: getAlertColor(r.alertStatus) }} className="text-[10px] font-bold uppercase">{r.category}</Text>
+            <View
+              style={{ backgroundColor: getAlertColor(r.alertStatus) + "20" }}
+              className="px-2 py-1 rounded-md"
+            >
+              <Text
+                style={{ color: getAlertColor(r.alertStatus) }}
+                className="text-[10px] font-bold uppercase"
+              >
+                {r.category}
+              </Text>
             </View>
           </View>
         ))}
@@ -321,8 +380,15 @@ export default function BPTrackerScreen() {
         <SafeAreaView className="flex-1 bg-white">
           <View className="flex-1 px-6">
             <View className="flex-row justify-between items-center py-6 border-b border-slate-100 mb-6">
-              <Text className="text-xl font-bold text-slate-900">New Reading</Text>
-              <Pressable onPress={() => { setShowEntryForm(false); resetForm(); }}>
+              <Text className="text-xl font-bold text-slate-900">
+                New Reading
+              </Text>
+              <Pressable
+                onPress={() => {
+                  setShowEntryForm(false);
+                  resetForm();
+                }}
+              >
                 <Ionicons name="close" size={28} color="#64748b" />
               </Pressable>
             </View>
@@ -331,9 +397,11 @@ export default function BPTrackerScreen() {
               {/* Vitals Section */}
               <View className="flex-row gap-4 mb-6">
                 <View className="flex-1">
-                  <Text className="text-xs font-semibold text-slate-500 mb-2 uppercase">Systolic</Text>
+                  <Text className="text-xs font-semibold text-slate-500 mb-2 uppercase">
+                    Systolic
+                  </Text>
                   <TextInput
-                    className={`bg-slate-50 p-4 rounded-2xl text-xl font-bold text-slate-900 border ${systolic && (parseInt(systolic) < 70 || parseInt(systolic) > 250) ? 'border-red-500' : 'border-slate-100'}`}
+                    className={`bg-slate-50 p-4 rounded-2xl text-xl font-bold text-slate-900 border ${systolic && (parseInt(systolic) < 70 || parseInt(systolic) > 250) ? "border-red-500" : "border-slate-100"}`}
                     keyboardType="numeric"
                     value={systolic}
                     onChangeText={setSystolic}
@@ -341,9 +409,11 @@ export default function BPTrackerScreen() {
                   />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-xs font-semibold text-slate-500 mb-2 uppercase">Diastolic</Text>
+                  <Text className="text-xs font-semibold text-slate-500 mb-2 uppercase">
+                    Diastolic
+                  </Text>
                   <TextInput
-                    className={`bg-slate-50 p-4 rounded-2xl text-xl font-bold text-slate-900 border ${diastolic && (parseInt(diastolic) < 40 || parseInt(diastolic) > 150) ? 'border-red-500' : 'border-slate-100'}`}
+                    className={`bg-slate-50 p-4 rounded-2xl text-xl font-bold text-slate-900 border ${diastolic && (parseInt(diastolic) < 40 || parseInt(diastolic) > 150) ? "border-red-500" : "border-slate-100"}`}
                     keyboardType="numeric"
                     value={diastolic}
                     onChangeText={setDiastolic}
@@ -353,9 +423,11 @@ export default function BPTrackerScreen() {
               </View>
 
               <View className="mb-6">
-                <Text className="text-xs font-semibold text-slate-500 mb-2 uppercase">Pulse Rate (BPM)</Text>
+                <Text className="text-xs font-semibold text-slate-500 mb-2 uppercase">
+                  Pulse Rate (BPM)
+                </Text>
                 <TextInput
-                  className={`bg-slate-50 p-4 rounded-2xl text-xl font-bold text-slate-900 border ${pulse && (parseInt(pulse) < 30 || parseInt(pulse) > 220) ? 'border-red-500' : 'border-slate-100'}`}
+                  className={`bg-slate-50 p-4 rounded-2xl text-xl font-bold text-slate-900 border ${pulse && (parseInt(pulse) < 30 || parseInt(pulse) > 220) ? "border-red-500" : "border-slate-100"}`}
                   keyboardType="numeric"
                   value={pulse}
                   onChangeText={setPulse}
@@ -391,13 +463,22 @@ export default function BPTrackerScreen() {
 
               <MultiSelect
                 label="Symptoms"
-                options={["Headache", "Dizziness", "Chest Pain", "Shortness of Breath", "None"]}
+                options={[
+                  "Headache",
+                  "Dizziness",
+                  "Chest Pain",
+                  "Shortness of Breath",
+                  "None",
+                ]}
                 selectedValues={selectedSymptoms}
                 onToggle={(val) => {
                   if (val === "None") setSelectedSymptoms(["None"]);
                   else {
-                    const filtered = selectedSymptoms.filter(s => s !== "None");
-                    if (filtered.includes(val)) setSelectedSymptoms(filtered.filter(s => s !== val));
+                    const filtered = selectedSymptoms.filter(
+                      (s) => s !== "None",
+                    );
+                    if (filtered.includes(val))
+                      setSelectedSymptoms(filtered.filter((s) => s !== val));
                     else setSelectedSymptoms([...filtered, val]);
                   }
                 }}
@@ -416,7 +497,9 @@ export default function BPTrackerScreen() {
 
               <View className="h-6" />
 
-              <Text className="text-xs font-semibold text-slate-500 mb-2 uppercase">Notes (Max 300 chars)</Text>
+              <Text className="text-xs font-semibold text-slate-500 mb-2 uppercase">
+                Notes (Max 300 chars)
+              </Text>
               <TextInput
                 className="bg-slate-50 p-4 rounded-2xl text-slate-900 border border-slate-100"
                 multiline
@@ -431,9 +514,11 @@ export default function BPTrackerScreen() {
               <Pressable
                 onPress={handleSave}
                 disabled={!isValid}
-                className={`p-5 rounded-2xl my-10 items-center shadow-lg ${isValid ? 'bg-primary' : 'bg-slate-300'}`}
+                className={`p-5 rounded-2xl my-10 items-center shadow-lg ${isValid ? "bg-primary" : "bg-slate-300"}`}
               >
-                <Text className="text-white font-bold text-lg">Save Reading</Text>
+                <Text className="text-white font-bold text-lg">
+                  Save Reading
+                </Text>
               </Pressable>
             </ScrollView>
           </View>

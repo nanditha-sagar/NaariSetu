@@ -118,6 +118,7 @@ export default function AnemiaTrackerScreen() {
     setHasLoggedToday(true);
     await loadData();
     Alert.alert("Saved!", "Today's anemia log has been recorded.");
+    router.navigate("/(tabs)/home");
   };
 
   const dayLabels = ["S", "M", "T", "W", "T", "F", "S"];
@@ -136,13 +137,6 @@ export default function AnemiaTrackerScreen() {
             Clinical daily health check-in
           </Text>
         </View>
-        {hasLoggedToday && (
-          <View className="px-3 py-1 rounded-full bg-emerald-50">
-            <Text className="text-xs font-semibold text-emerald-600">
-              ✓ Logged
-            </Text>
-          </View>
-        )}
       </View>
 
       <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>

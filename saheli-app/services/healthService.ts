@@ -10,6 +10,32 @@ import {
   where,
 } from "firebase/firestore";
 import { ScreeningEntry, AssessmentData } from "../utils/data";
+import {
+  AnemiaLogEntry,
+  MoodLogEntry,
+  PeriodLogEntry,
+  SkinLogEntry,
+} from "../utils/trackerData";
+import { PCOSLogEntry } from "../utils/pcosTrackerData";
+import { GeneralLogEntry } from "../utils/generalTrackerData";
+
+// Helper to remove undefined fields from objects before saving to Firestore
+const cleanData = (obj: any): any => {
+  const newObj = { ...obj };
+  Object.keys(newObj).forEach((key) => {
+    if (newObj[key] === undefined) {
+      delete newObj[key];
+    } else if (
+      newObj[key] &&
+      typeof newObj[key] === "object" &&
+      !Array.isArray(newObj[key]) &&
+      !(newObj[key] instanceof Date)
+    ) {
+      newObj[key] = cleanData(newObj[key]);
+    }
+  });
+  return newObj;
+};
 
 // Storage helpers migrated to Firebase Firestore
 export async function saveScreening(entry: ScreeningEntry): Promise<void> {
@@ -17,17 +43,20 @@ export async function saveScreening(entry: ScreeningEntry): Promise<void> {
     const user = auth.currentUser;
     if (!user) throw new Error("User not authenticated");
 
-    await setDoc(doc(db, "screenings", entry.id), {
-      user_id: user.uid,
-      type: entry.type,
-      condition: entry.condition,
-      risk: entry.risk,
-      confidence: entry.confidence,
-      tests: entry.tests,
-      image_uri: entry.imageUri,
-      timestamp: entry.timestamp,
-      answers: entry.answers,
-    });
+    await setDoc(
+      doc(db, "screenings", entry.id),
+      cleanData({
+        user_id: user.uid,
+        type: entry.type,
+        condition: entry.condition,
+        risk: entry.risk,
+        confidence: entry.confidence,
+        tests: entry.tests,
+        image_uri: entry.imageUri,
+        timestamp: entry.timestamp,
+        answers: entry.answers,
+      }),
+    );
   } catch (e) {
     console.error("Failed to save screening to Firestore:", e);
   }
@@ -56,11 +85,14 @@ export async function saveFullAssessment(data: AssessmentData): Promise<void> {
 
     // 2. Save assessment record
     const newAssessmentRef = doc(collection(db, "assessments"));
-    await setDoc(newAssessmentRef, {
-      user_id: user.uid,
-      data: data,
-      timestamp: new Date().toISOString(),
-    });
+    await setDoc(
+      newAssessmentRef,
+      cleanData({
+        user_id: user.uid,
+        data: data,
+        timestamp: new Date().toISOString(),
+      }),
+    );
   } catch (e) {
     console.error("Failed to save full assessment to Firestore:", e);
     throw e;
@@ -125,12 +157,12 @@ export async function saveDailyLog(
 
     await setDoc(
       logRef,
-      {
+      cleanData({
         user_id: user.uid,
         date: today,
         data: newData,
         updated_at: new Date().toISOString(),
-      },
+      }),
       { merge: true },
     );
   } catch (e) {
@@ -213,16 +245,21 @@ export interface BPReading {
   timestamp: string; // ISO String
 }
 
-export async function saveBPReading(reading: Omit<BPReading, "userId">): Promise<void> {
+export async function saveBPReading(
+  reading: Omit<BPReading, "userId">,
+): Promise<void> {
   try {
     const user = auth.currentUser;
     if (!user) throw new Error("User not authenticated");
 
     const newReadingRef = doc(collection(db, "bloodPressure"));
-    await setDoc(newReadingRef, {
-      ...reading,
-      userId: user.uid,
-    });
+    await setDoc(
+      newReadingRef,
+      cleanData({
+        ...reading,
+        userId: user.uid,
+      }),
+    );
   } catch (e) {
     console.error("Failed to save BP reading to Firestore:", e);
     throw e;
@@ -237,7 +274,7 @@ export async function getBPReadings(): Promise<BPReading[]> {
     const bpQuery = query(
       collection(db, "bloodPressure"),
       where("userId", "==", user.uid),
-      orderBy("timestamp", "desc")
+      orderBy("timestamp", "desc"),
     );
     const querySnapshot = await getDocs(bpQuery);
 
@@ -259,7 +296,12 @@ export interface GlucoseReading {
   id?: string;
   userId: string;
   value: number;
-  timing: "fasting" | "before_meal" | "after_meal_1h" | "after_meal_2h" | "random";
+  timing:
+    | "fasting"
+    | "before_meal"
+    | "after_meal_1h"
+    | "after_meal_2h"
+    | "random";
   source: "glucometer" | "lab" | "cgm";
   symptoms: string[];
   insulinMedication: boolean;
@@ -282,10 +324,13 @@ export async function saveGlucoseReading(
     if (!user) throw new Error("User not authenticated");
 
     const newReadingRef = doc(collection(db, "glucose"));
-    await setDoc(newReadingRef, {
-      ...reading,
-      userId: user.uid,
-    });
+    await setDoc(
+      newReadingRef,
+      cleanData({
+        ...reading,
+        userId: user.uid,
+      }),
+    );
   } catch (e) {
     console.error("Failed to save Glucose reading to Firestore:", e);
     throw e;
@@ -312,6 +357,219 @@ export async function getGlucoseReadings(): Promise<GlucoseReading[]> {
     return readings;
   } catch (e) {
     console.error("Failed to load Glucose readings from Firestore:", e);
+    return [];
+  }
+}
+
+// ─── Anemia Firestore CRUD ───
+export async function saveAnemiaReading(entry: AnemiaLogEntry): Promise<void> {
+  try {
+    const user = auth.currentUser;
+    if (!user) throw new Error("User not authenticated");
+    const docId = `${user.uid}_${entry.date}`;
+    await setDoc(
+      doc(db, "anemia", docId),
+      cleanData({ ...entry, userId: user.uid }),
+    );
+  } catch (e) {
+    console.error("Failed to save Anemia reading to Firestore:", e);
+    throw e;
+  }
+}
+
+export async function getAnemiaReadings(): Promise<AnemiaLogEntry[]> {
+  try {
+    const user = auth.currentUser;
+    if (!user) return [];
+    const q = query(
+      collection(db, "anemia"),
+      where("userId", "==", user.uid),
+      orderBy("timestamp", "desc"),
+    );
+    const snapshot = await getDocs(q);
+    const readings: AnemiaLogEntry[] = [];
+    snapshot.forEach((d) => readings.push({ ...d.data() } as AnemiaLogEntry));
+    return readings;
+  } catch (e) {
+    console.error("Failed to load Anemia readings:", e);
+    return [];
+  }
+}
+
+// ─── PCOS Firestore CRUD ───
+export async function savePCOSLog(entry: PCOSLogEntry): Promise<void> {
+  try {
+    const user = auth.currentUser;
+    if (!user) throw new Error("User not authenticated");
+    const docId = `${user.uid}_${entry.date}`;
+    await setDoc(
+      doc(db, "pcos", docId),
+      cleanData({ ...entry, userId: user.uid }),
+    );
+  } catch (e) {
+    console.error("Failed to save PCOS log to Firestore:", e);
+    throw e;
+  }
+}
+
+export async function getPCOSLogs(): Promise<PCOSLogEntry[]> {
+  try {
+    const user = auth.currentUser;
+    if (!user) return [];
+    const q = query(
+      collection(db, "pcos"),
+      where("userId", "==", user.uid),
+      orderBy("timestamp", "desc"),
+    );
+    const snapshot = await getDocs(q);
+    const logs: PCOSLogEntry[] = [];
+    snapshot.forEach((d) => logs.push({ ...d.data() } as PCOSLogEntry));
+    return logs;
+  } catch (e) {
+    console.error("Failed to load PCOS logs:", e);
+    return [];
+  }
+}
+
+// ─── General Health Firestore CRUD ───
+export async function saveGeneralLog(entry: GeneralLogEntry): Promise<void> {
+  try {
+    const user = auth.currentUser;
+    if (!user) throw new Error("User not authenticated");
+    const docId = `${user.uid}_${entry.date}`;
+    await setDoc(
+      doc(db, "generalHealth", docId),
+      cleanData({
+        ...entry,
+        userId: user.uid,
+      }),
+    );
+  } catch (e) {
+    console.error("Failed to save General Health log to Firestore:", e);
+    throw e;
+  }
+}
+
+export async function getGeneralLogs(): Promise<GeneralLogEntry[]> {
+  try {
+    const user = auth.currentUser;
+    if (!user) return [];
+    const q = query(
+      collection(db, "generalHealth"),
+      where("userId", "==", user.uid),
+      orderBy("timestamp", "desc"),
+    );
+    const snapshot = await getDocs(q);
+    const logs: GeneralLogEntry[] = [];
+    snapshot.forEach((d) => logs.push({ ...d.data() } as GeneralLogEntry));
+    return logs;
+  } catch (e) {
+    console.error("Failed to load General Health logs:", e);
+    return [];
+  }
+}
+
+// ─── Mood Firestore CRUD ───
+export async function saveMoodEntry(entry: MoodLogEntry): Promise<void> {
+  try {
+    const user = auth.currentUser;
+    if (!user) throw new Error("User not authenticated");
+    const docId = `${user.uid}_${entry.date}`;
+    await setDoc(
+      doc(db, "mood", docId),
+      cleanData({ ...entry, userId: user.uid }),
+    );
+  } catch (e) {
+    console.error("Failed to save Mood log to Firestore:", e);
+    throw e;
+  }
+}
+
+export async function getMoodEntries(): Promise<MoodLogEntry[]> {
+  try {
+    const user = auth.currentUser;
+    if (!user) return [];
+    const q = query(
+      collection(db, "mood"),
+      where("userId", "==", user.uid),
+      orderBy("timestamp", "desc"),
+    );
+    const snapshot = await getDocs(q);
+    const logs: MoodLogEntry[] = [];
+    snapshot.forEach((d) => logs.push({ ...d.data() } as MoodLogEntry));
+    return logs;
+  } catch (e) {
+    console.error("Failed to load Mood logs:", e);
+    return [];
+  }
+}
+
+// ─── Period Firestore CRUD ───
+export async function savePeriodLog(entry: PeriodLogEntry): Promise<void> {
+  try {
+    const user = auth.currentUser;
+    if (!user) throw new Error("User not authenticated");
+    const docId = `${user.uid}_${entry.date}`;
+    await setDoc(
+      doc(db, "periods", docId),
+      cleanData({ ...entry, userId: user.uid }),
+    );
+  } catch (e) {
+    console.error("Failed to save Period log to Firestore:", e);
+    throw e;
+  }
+}
+
+export async function getPeriodLogs(): Promise<PeriodLogEntry[]> {
+  try {
+    const user = auth.currentUser;
+    if (!user) return [];
+    const q = query(
+      collection(db, "periods"),
+      where("userId", "==", user.uid),
+      orderBy("timestamp", "desc"),
+    );
+    const snapshot = await getDocs(q);
+    const logs: PeriodLogEntry[] = [];
+    snapshot.forEach((d) => logs.push({ ...d.data() } as PeriodLogEntry));
+    return logs;
+  } catch (e) {
+    console.error("Failed to load Period logs:", e);
+    return [];
+  }
+}
+
+// ─── Skin Firestore CRUD ───
+export async function saveSkinLog(entry: SkinLogEntry): Promise<void> {
+  try {
+    const user = auth.currentUser;
+    if (!user) throw new Error("User not authenticated");
+    const docId = `${user.uid}_${entry.date}`;
+    await setDoc(
+      doc(db, "skin", docId),
+      cleanData({ ...entry, userId: user.uid }),
+    );
+  } catch (e) {
+    console.error("Failed to save Skin log to Firestore:", e);
+    throw e;
+  }
+}
+
+export async function getSkinLogs(): Promise<SkinLogEntry[]> {
+  try {
+    const user = auth.currentUser;
+    if (!user) return [];
+    const q = query(
+      collection(db, "skin"),
+      where("userId", "==", user.uid),
+      orderBy("timestamp", "desc"),
+    );
+    const snapshot = await getDocs(q);
+    const logs: SkinLogEntry[] = [];
+    snapshot.forEach((d) => logs.push({ ...d.data() } as SkinLogEntry));
+    return logs;
+  } catch (e) {
+    console.error("Failed to load Skin logs:", e);
     return [];
   }
 }

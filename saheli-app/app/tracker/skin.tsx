@@ -14,11 +14,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import {
   SkinLogEntry,
   SkinInsights,
-  getSkinLogs,
-  saveSkinLog,
   generateSkinInsights,
   getToday,
 } from "@/utils/trackerData";
+import { getSkinLogs, saveSkinLog } from "@/services/healthService";
 import TriageZoneCard from "@/components/TriageZoneCard";
 import SegmentedSelector from "@/components/SegmentedSelector";
 
@@ -79,6 +78,7 @@ export default function SkinTrackerScreen() {
     await saveSkinLog(entry);
     setInsights(generateSkinInsights(entry));
     Alert.alert("Success", "Skin log saved successfully!");
+    router.navigate("/(tabs)/home");
   };
 
   const toggleSpotChange = (change: "size" | "color" | "bleeding") => {

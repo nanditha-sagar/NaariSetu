@@ -14,12 +14,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import {
   PeriodLogEntry,
   PeriodInsights,
-  getPeriodLogs,
-  savePeriodLog,
   generatePeriodInsights,
   getToday,
   Severity,
 } from "@/utils/trackerData";
+import { getPeriodLogs, savePeriodLog } from "@/services/healthService";
 import TriageZoneCard from "@/components/TriageZoneCard";
 import SegmentedSelector from "@/components/SegmentedSelector";
 
@@ -111,6 +110,7 @@ export default function PeriodTrackerScreen() {
     const logs = await getPeriodLogs();
     setInsights(generatePeriodInsights(entry, logs));
     Alert.alert("Saved!", "Your period log has been recorded.");
+    router.navigate("/(tabs)/home");
   };
 
   const getPhaseEmoji = (phase: string) => {
@@ -139,13 +139,6 @@ export default function PeriodTrackerScreen() {
           <Text className="text-2xl font-bold text-slate-900">
             Period Tracker
           </Text>
-          {hasLoggedToday && (
-            <View className="ml-auto px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100">
-              <Text className="text-[10px] font-bold text-emerald-600">
-                ✓ LOGGED
-              </Text>
-            </View>
-          )}
         </View>
 
         {/* Triage Card */}

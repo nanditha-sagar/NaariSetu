@@ -18,9 +18,6 @@ import {
   PCOSLogEntry,
   PCOSInsights,
   Severity,
-  getPCOSLogs,
-  getTodayPCOSLog,
-  savePCOSLog,
   generatePCOSInsights,
   computeDailyPCOSScore,
   getToday,
@@ -28,6 +25,7 @@ import {
   getTrendIcon,
   getSymptomsByCategory,
 } from "@/utils/pcosTrackerData";
+import { getPCOSLogs, savePCOSLog } from "@/services/healthService";
 
 export default function PCOSTrackerScreen() {
   const [symptoms, setSymptoms] = useState<Record<string, Severity>>({});
@@ -40,7 +38,7 @@ export default function PCOSTrackerScreen() {
 
   const loadData = useCallback(async () => {
     const logs = await getPCOSLogs();
-    const todayLog = await getTodayPCOSLog();
+    const todayLog = logs.find((l) => l.date === getToday()) || null;
 
     if (todayLog) {
       setSymptoms(todayLog.symptoms);
@@ -88,6 +86,7 @@ export default function PCOSTrackerScreen() {
     setHasLoggedToday(true);
     await loadData();
     Alert.alert("Saved!", "Today's PCOS log has been recorded.");
+    router.navigate("/(tabs)/home");
   };
 
   const dayLabels = ["S", "M", "T", "W", "T", "F", "S"];
@@ -107,16 +106,6 @@ export default function PCOSTrackerScreen() {
             Cycle, hormones & lifestyle
           </Text>
         </View>
-        {hasLoggedToday && (
-          <View
-            className="px-3 py-1 rounded-full"
-            style={{ backgroundColor: "rgba(16,185,129,0.1)" }}
-          >
-            <Text className="text-xs font-semibold text-emerald-600">
-              ✓ Logged
-            </Text>
-          </View>
-        )}
       </View>
 
       <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>

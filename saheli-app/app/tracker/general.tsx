@@ -20,15 +20,13 @@ import {
   MoodType,
   EnergyLevel,
   SleepQuality,
-  getGeneralLogs,
-  getTodayGeneralLog,
-  saveGeneralLog,
   generateGeneralInsights,
   computeDailyScore,
   getToday,
   getScoreColor,
   getTrendIcon,
 } from "@/utils/generalTrackerData";
+import { getGeneralLogs, saveGeneralLog } from "@/services/healthService";
 
 export default function GeneralHealthScreen() {
   const [sleepHours, setSleepHours] = useState("7");
@@ -46,7 +44,7 @@ export default function GeneralHealthScreen() {
 
   const loadData = useCallback(async () => {
     const logs = await getGeneralLogs();
-    const todayLog = await getTodayGeneralLog();
+    const todayLog = logs.find((l) => l.date === getToday()) || null;
 
     if (todayLog) {
       setSleepHours(String(todayLog.sleepHours));
@@ -96,6 +94,7 @@ export default function GeneralHealthScreen() {
     setHasLoggedToday(true);
     await loadData();
     Alert.alert("Saved!", "Today's wellness log has been recorded.");
+    router.navigate("/(tabs)/home");
   };
 
   const dayLabels = ["S", "M", "T", "W", "T", "F", "S"];
@@ -115,16 +114,6 @@ export default function GeneralHealthScreen() {
             Sleep, mood & lifestyle
           </Text>
         </View>
-        {hasLoggedToday && (
-          <View
-            className="px-3 py-1 rounded-full"
-            style={{ backgroundColor: "rgba(16,185,129,0.1)" }}
-          >
-            <Text className="text-xs font-semibold text-emerald-600">
-              ✓ Logged
-            </Text>
-          </View>
-        )}
       </View>
 
       <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
@@ -225,8 +214,8 @@ export default function GeneralHealthScreen() {
                   style={{
                     backgroundColor:
                       alert.startsWith("💡") ||
-                        alert.startsWith("💧") ||
-                        alert.startsWith("🏃")
+                      alert.startsWith("💧") ||
+                      alert.startsWith("🏃")
                         ? "rgba(126,211,212,0.08)"
                         : "rgba(239,68,68,0.08)",
                   }}
