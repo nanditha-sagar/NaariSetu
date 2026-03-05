@@ -1,0 +1,26 @@
+# Root .gitignore for NaariSetu Project
+
+# --- Backend (ai-backend) ---
+ai-backend/venv/
+ai-backend/__pycache__/
+ai-backend/.env
+ai-backend/offload/
+ai-backend/*.txt
+ai-backend/*.log
+
+# --- Frontend (saheli-app) ---
+saheli-app/node_modules/
+saheli-app/.expo/
+saheli-app/dist/
+saheli-app/npm-debug.log*
+saheli-app/yarn-debug.log*
+saheli-app/yarn-error.log*
+saheli-app/.env
+
+# --- System/Misc ---
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/

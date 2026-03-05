@@ -18,7 +18,7 @@ import "../global.css";
 export { ErrorBoundary } from "expo-router";
 
 export const unstable_settings = {
-  initialRouteName: "welcome",
+  initialRouteName: "index",
 };
 
 SplashScreen.preventAutoHideAsync();
@@ -65,25 +65,39 @@ function RootLayoutNav() {
   useEffect(() => {
     if (!isReady) return;
 
+    const rootSegment = segments[0];
     const inAuthGroup =
-      segments[0] === "login" ||
-      segments[0] === "signup" ||
-      segments[0] === "welcome";
+      rootSegment === "login" ||
+      rootSegment === "signup" ||
+      rootSegment === "welcome";
+
+    // Debugging logs to track navigation state
+    console.log("[Navigation] State:", {
+      session: !!session,
+      rootSegment,
+      inAuthGroup,
+      segments,
+    });
 
     if (session && inAuthGroup) {
-      // Redirect logged-in users away from auth screens
-      router.replace("/(tabs)/home");
-    } else if (
-      !session &&
-      !inAuthGroup &&
-      segments[0] !== "screening" &&
-      segments[0] !== "modal" &&
-      segments[0] !== undefined
-    ) {
-      // Optional: Redirect unauthenticated users to welcome (if they try to access tabs)
-      // For now, only redirect if they are specifically in tabs.
-      if (segments[0] === "(tabs)") {
-        router.replace("/welcome");
+      console.log("[Navigation] Redirecting to home...");
+      const timer = setTimeout(() => {
+        router.replace("/(tabs)/home");
+      }, 50); // Small delay to prevent race conditions
+      return () => clearTimeout(timer);
+    } else if (!session && !inAuthGroup) {
+      // Only redirect if not already in an allowed public/modal path
+      const isPublicPath =
+        rootSegment === "screening" ||
+        rootSegment === "modal" ||
+        rootSegment === undefined; // Expo Router root path
+
+      if (!isPublicPath) {
+        console.log("[Navigation] Redirecting to welcome...", { rootSegment });
+        const timer = setTimeout(() => {
+          router.replace("/welcome");
+        }, 50);
+        return () => clearTimeout(timer);
       }
     }
   }, [session, segments, isReady]);
@@ -91,6 +105,7 @@ function RootLayoutNav() {
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Stack>
+        <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen
           name="welcome"
           options={{ headerShown: false, animation: "fade" }}

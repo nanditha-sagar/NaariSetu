@@ -1,5 +1,14 @@
-import { Redirect } from "expo-router";
+import { router } from "expo-router";
+import { useEffect } from "react";
 
 export default function Index() {
-  return <Redirect href="/welcome" />;
+  useEffect(() => {
+    // Small delay to ensure navigation context is ready
+    const timer = setTimeout(() => {
+      router.replace("/welcome");
+    }, 10);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return null;
 }

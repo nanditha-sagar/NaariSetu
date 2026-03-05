@@ -9,6 +9,12 @@ import {
   generateAnemiaInsights,
   getRiskColor,
   AnemiaInsights,
+  getBPLogs,
+  generateBPInsights,
+  getMoodLogs,
+  generateMoodInsights,
+  getPeriodLogs,
+  generatePeriodInsights,
 } from "@/utils/trackerData";
 
 import {
@@ -25,6 +31,13 @@ import {
   GeneralInsights,
 } from "@/utils/generalTrackerData";
 
+import {
+  getGlobalClinicalTriage,
+  GlobalTriageResult,
+  HealthSnapshot,
+} from "@/services/aiService";
+import GlobalAIInsight from "@/components/GlobalAIInsight";
+
 export default function InsightsScreen() {
   const [anemiaInsights, setAnemiaInsights] = useState<AnemiaInsights | null>(
     null,
@@ -40,6 +53,10 @@ export default function InsightsScreen() {
     null,
   );
   const [lastLogDate, setLastLogDate] = useState<string | null>(null);
+
+  // Saheli AI State
+  const [aiTriage, setAiTriage] = useState<GlobalTriageResult | null>(null);
+  const [isAiLoading, setIsAiLoading] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -64,6 +81,40 @@ export default function InsightsScreen() {
           setGeneralInsights(generateGeneralInsights(gLogs));
           setLastGeneralLogDate(gLogs[gLogs.length - 1].date);
         }
+
+        // ─── Global AI Triage Integration ───
+        setIsAiLoading(true);
+        try {
+          const [bpLogs, moodLogs, periodLogs] = await Promise.all([
+            getBPLogs(),
+            getMoodLogs(),
+            getPeriodLogs(),
+          ]);
+
+          const snapshot: HealthSnapshot = {
+            anemia: logs.length > 0 ? generateAnemiaInsights(logs) : null,
+            bp: bpLogs.length > 0 ? generateBPInsights(bpLogs) : null,
+            mood:
+              moodLogs.length > 0
+                ? generateMoodInsights(moodLogs[moodLogs.length - 1], moodLogs)
+                : null,
+            periods:
+              periodLogs.length > 0
+                ? generatePeriodInsights(
+                    periodLogs[periodLogs.length - 1],
+                    periodLogs,
+                  )
+                : null,
+            glucose: null, // Placeholder if glucose tracker is added
+          };
+
+          const triage = await getGlobalClinicalTriage(snapshot);
+          setAiTriage(triage);
+        } catch (e) {
+          console.error("Failed to fetch global AI triage:", e);
+        } finally {
+          setIsAiLoading(false);
+        }
       })();
     }, []),
   );
@@ -77,6 +128,15 @@ export default function InsightsScreen() {
           </Text>
           <Text className="text-slate-500 mt-1">
             Monitor your health daily & get AI insights
+          </Text>
+        </View>
+
+        {/* ─── Saheli AI Global Insight ─── */}
+        <GlobalAIInsight data={aiTriage} loading={isAiLoading} />
+
+        <View className="mb-4">
+          <Text className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+            Individual Trackers
           </Text>
         </View>
 
