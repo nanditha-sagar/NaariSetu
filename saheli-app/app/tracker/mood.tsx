@@ -7,7 +7,9 @@ import {
   Alert,
   Linking,
   Modal,
+  TextInput,
 } from "react-native";
+
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -135,6 +137,88 @@ function MoodCareButton() {
   );
 }
 
+function SafetySuggestions({ text }: { text: string }) {
+  if (!text.trim()) return null;
+
+  const lowercase = text.toLowerCase();
+  let suggestions: string[] = [];
+  let urgency: "low" | "medium" | "high" = "low";
+
+  if (
+    lowercase.includes("hurt") ||
+    lowercase.includes("end") ||
+    lowercase.includes("kill") ||
+    lowercase.includes("suicide") ||
+    lowercase.includes("die")
+  ) {
+    urgency = "high";
+    suggestions = [
+      "Please call a crisis hotline immediately.",
+      "Reach out to a trusted friend or family member right now.",
+      "Go to the nearest emergency room if you feel unsafe.",
+    ];
+  } else if (
+    lowercase.includes("hopeless") ||
+    lowercase.includes("give up") ||
+    lowercase.includes("useless") ||
+    lowercase.includes("heavy")
+  ) {
+    urgency = "medium";
+    suggestions = [
+      "It's okay to feel overwhelmed. Try taking deep breaths.",
+      "Consider talking to a therapist or counselor.",
+      "Write down three small things you are grateful for today.",
+    ];
+  } else {
+    suggestions = [
+      "Thank you for sharing your thoughts.",
+      "Be kind to yourself today.",
+      "Remember that feelings are temporary and can change.",
+    ];
+  }
+
+  return (
+    <View
+      className={`p-4 rounded-xl mt-4 border ${urgency === "high" ? "bg-red-50 border-red-200" : urgency === "medium" ? "bg-amber-50 border-amber-200" : "bg-blue-50 border-blue-200"}`}
+    >
+      <View className="flex-row items-center gap-2 mb-2">
+        <MaterialIcons
+          name={urgency === "high" ? "report" : "info"}
+          size={18}
+          color={
+            urgency === "high"
+              ? "#dc2626"
+              : urgency === "medium"
+                ? "#d97706"
+                : "#2563eb"
+          }
+        />
+        <Text
+          className={`font-bold ${urgency === "high" ? "text-red-900" : urgency === "medium" ? "text-amber-900" : "text-blue-900"}`}
+        >
+          {urgency === "high" ? "Urgent Support" : "Gentle Suggestions"}
+        </Text>
+      </View>
+      {suggestions.map((s, i) => (
+        <Text
+          key={i}
+          className={`text-sm mb-1 ${urgency === "high" ? "text-red-800" : urgency === "medium" ? "text-amber-800" : "text-blue-800"}`}
+        >
+          • {s}
+        </Text>
+      ))}
+      {urgency === "high" && (
+        <Pressable
+          onPress={() => Linking.openURL("tel:988")}
+          className="mt-3 bg-red-600 py-2 rounded-lg items-center"
+        >
+          <Text className="text-white font-bold">Call 988 (Crisis Line)</Text>
+        </Pressable>
+      )}
+    </View>
+  );
+}
+
 export default function MoodTrackerScreen() {
   const [valence, setValence] = useState<number>(5);
   const [anhedonia, setAnhedonia] = useState<MoodLogEntry["anhedonia"]>("none");
@@ -143,8 +227,7 @@ export default function MoodTrackerScreen() {
   const [sleep, setSleep] = useState<MoodLogEntry["sleep"]>("normal");
   const [appetite, setAppetite] = useState<MoodLogEntry["appetite"]>("normal");
   const [focus, setFocus] = useState<MoodLogEntry["focus"]>("normal");
-  const [safetyCheck, setSafetyCheck] =
-    useState<MoodLogEntry["safetyCheck"]>("no");
+  const [safetyCheck, setSafetyCheck] = useState<string>("");
   const [isPostpartum, setIsPostpartum] = useState<boolean>(false);
 
   const [insights, setInsights] = useState<MoodInsights | null>(null);
@@ -162,7 +245,7 @@ export default function MoodTrackerScreen() {
       setSleep(todayLog.sleep);
       setAppetite(todayLog.appetite);
       setFocus(todayLog.focus);
-      setSafetyCheck(todayLog.safetyCheck);
+      setSafetyCheck(todayLog.safetyCheck || "");
       if (todayLog.isPostpartum !== undefined)
         setIsPostpartum(todayLog.isPostpartum);
       setInsights(generateMoodInsights(todayLog, logs));
@@ -194,7 +277,16 @@ export default function MoodTrackerScreen() {
       await saveMoodEntry(entry);
       const logs = await getMoodEntries();
       setInsights(generateMoodInsights(entry, logs));
-      if (entry.safetyCheck !== "no") {
+
+      const lowercaseSafety = safetyCheck.toLowerCase();
+      const needsCrisisSupport =
+        lowercaseSafety.includes("hurt") ||
+        lowercaseSafety.includes("kill") ||
+        lowercaseSafety.includes("suicide") ||
+        lowercaseSafety.includes("die") ||
+        lowercaseSafety.includes("end my life");
+
+      if (needsCrisisSupport) {
         Alert.alert(
           "Crisis Support",
           "Please reach out to professional help immediately. You are not alone.",
@@ -234,7 +326,7 @@ export default function MoodTrackerScreen() {
             <TriageZoneCard
               zone={
                 insights.triageZone === "Yellow" ||
-                insights.triageZone === "Orange"
+                  insights.triageZone === "Orange"
                   ? "Amber"
                   : (insights.triageZone as any)
               }
@@ -440,50 +532,6 @@ export default function MoodTrackerScreen() {
           />
         </View>
 
-        {/* Safety Check */}
-        <View className="bg-red-50 rounded-2xl p-6 border border-red-100 mb-8">
-          <View className="flex-row items-center gap-2 mb-4">
-            <MaterialIcons name="security" size={20} color="#dc2626" />
-            <Text className="text-lg font-bold text-red-900">Safety Check</Text>
-          </View>
-          <Text className="text-sm text-red-800 mb-4">
-            Have you had thoughts of hurting yourself?
-          </Text>
-
-          <Pressable
-            onPress={() => setSafetyCheck("no")}
-            className={`p-4 rounded-xl mb-2 flex-row items-center justify-between ${safetyCheck === "no" ? "bg-white border-2 border-red-500" : "bg-red-100/50"}`}
-          >
-            <Text className="font-bold text-slate-700">No</Text>
-            {safetyCheck === "no" && (
-              <MaterialIcons name="check-circle" size={20} color="#ef4444" />
-            )}
-          </Pressable>
-
-          <Pressable
-            onPress={() => setSafetyCheck("passive")}
-            className={`p-4 rounded-xl mb-2 flex-row items-center justify-between ${safetyCheck === "passive" ? "bg-white border-2 border-red-500" : "bg-red-100/50"}`}
-          >
-            <Text className="font-bold text-slate-700">
-              Passive thoughts (e.g. "I wish I wouldn't wake up")
-            </Text>
-            {safetyCheck === "passive" && (
-              <MaterialIcons name="warning" size={20} color="#ef4444" />
-            )}
-          </Pressable>
-
-          <Pressable
-            onPress={() => setSafetyCheck("active")}
-            className={`p-4 rounded-xl flex-row items-center justify-between ${safetyCheck === "active" ? "bg-white border-2 border-red-500" : "bg-red-100/50"}`}
-          >
-            <Text className="font-bold text-slate-700">
-              Active thoughts/Planning
-            </Text>
-            {safetyCheck === "active" && (
-              <MaterialIcons name="error" size={20} color="#ef4444" />
-            )}
-          </Pressable>
-        </View>
 
         {/* Save Button */}
         <Pressable

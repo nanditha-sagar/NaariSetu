@@ -97,38 +97,49 @@ const TRACKERS = [
 
 const EDUCATIONAL_RESOURCES = [
   {
+    id: "8",
+    title: "Growing Up Safely: A Guide to Body Awareness",
+    type: "Article",
+    readTime: "5 min read",
+    thumbnail: "https://img.freepik.com/free-vector/health-protection-concept-illustration_114360-1491.jpg",
+    color: "#6366f1",
+    route: "/educational/growing-up-safely",
+  },
+  {
+    id: "7",
+    title: "Your First Period Guide: A Simple Guide for Girls",
+    type: "Article",
+    readTime: "4 min read",
+    thumbnail: "https://img.freepik.com/free-vector/menstrual-cycle-concept-illustration_114360-10118.jpg",
+    color: "#ec4899",
+    route: "/educational/first-period-guide",
+  },
+  {
+    id: "6",
+    title: "Breast Cancer Awareness: Warning Signs, Early Detection & Screening",
+    type: "Article",
+    readTime: "5 min read",
+    thumbnail: "https://img.freepik.com/free-photo/pink-ribbon-breast-cancer-awareness-concept_53876-138379.jpg",
+    color: "#db2777",
+    route: "/educational/breast-cancer-awareness",
+  },
+  {
     id: "1",
     title: "Understanding PCOS Symptoms",
     type: "Video",
     duration: "5 min",
-    thumbnail: "https://img.youtube.com/vi/3w3s3q3q3q3/0.jpg",
+    thumbnail: "https://img.youtube.com/vi/HzG-zaMYZZ8/0.jpg",
     color: "#a855f7",
-    url: "https://www.youtube.com/watch?v=3w3s3q3q3q3",
+    url: "https://www.youtube.com/watch?v=HzG-zaMYZZ8",
   },
   {
     id: "2",
-    title: "Yoga for Menstrual Cramps",
+    title: "Get Relief from Period Cramps",
     type: "Video",
     duration: "10 min",
-    thumbnail: "https://img.youtube.com/vi/4w4s4q4q4q4/0.jpg",
+    thumbnail: "https://img.youtube.com/vi/LIsYbDCMfDc/0.jpg",
     color: "#ec135b",
-    url: "https://www.youtube.com/watch?v=4w4s4q4q4q4",
-  },
-  {
-    id: "3",
-    title: "Iron-Rich Diet for Anemia",
-    type: "Article",
-    readTime: "3 min read",
-    color: "#ef4444",
-    url: "https://www.google.com/search?q=iron+rich+diet+for+anemia",
-  },
-  {
-    id: "4",
-    title: "Mental Health & Hormones",
-    type: "Article",
-    readTime: "4 min read",
-    color: "#7ed3d4",
-    url: "https://www.google.com/search?q=mental+health+and+hormones",
+    url: "https://www.youtube.com/watch?v=LIsYbDCMfDc",
   },
   {
     id: "5",
@@ -160,6 +171,7 @@ export default function HomeScreen() {
   const [healthTip, setHealthTip] = useState(getRandomTip());
   const [userProfile, setUserProfile] = useState<any>(null);
   const [loggedStatus, setLoggedStatus] = useState<Record<string, boolean>>({});
+  const [selectedMood, setSelectedMood] = useState<string | null>(null);
 
   const thought = useMemo(() => {
     return THOUGHTS[Math.floor(Math.random() * THOUGHTS.length)];
@@ -285,29 +297,31 @@ export default function HomeScreen() {
 
         {/* ─── Mood Check-in ─── */}
         <View className="bg-white rounded-2xl p-5 border border-slate-100 mb-6">
-          <Text className="text-sm font-bold text-slate-800 mb-4">
-            How are you feeling today?
-          </Text>
+          <View className="flex-row justify-between items-center mb-4">
+            <Text className="text-sm font-bold text-slate-800">
+              How are you feeling today?
+            </Text>
+          </View>
+
           <View className="flex-row justify-between">
             {[
-              { label: "Happy", emoji: "😊", color: "#fef3c7" },
-              { label: "Neutral", emoji: "😐", color: "#f1f5f9" },
-              { label: "Angry", emoji: "😠", color: "#fee2e2" },
-              { label: "Sad", emoji: "😔", color: "#e0f2fe" },
+              { label: "Happy", emoji: "😊", color: "#fef3c7", accent: "#f59e0b", suggestions: ["Keep doing what makes you happy!", "Share your joy with someone you love.", "Write down what made you smile today."] },
+              { label: "Neutral", emoji: "😐", color: "#f1f5f9", accent: "#64748b", suggestions: ["Try a short walk to refresh your mind.", "Listen to your favourite music.", "Drink water and take a short break."] },
+              { label: "Angry", emoji: "😠", color: "#fee2e2", accent: "#ef4444", suggestions: ["Take 5 deep breaths slowly.", "Step away from the situation for a few minutes.", "Write down what's bothering you."] },
+              { label: "Sad", emoji: "😔", color: "#e0f2fe", accent: "#3b82f6", suggestions: ["It's okay to feel this way. Be gentle with yourself.", "Talk to someone you trust about how you feel.", "Try a warm drink and a calming activity."] },
             ].map((mood) => (
               <Pressable
                 key={mood.label}
-                onPress={() =>
-                  Alert.alert(
-                    "Mood Logged",
-                    `Glad you shared you feel ${mood.label}!`,
-                  )
-                }
+                onPress={() => setSelectedMood(selectedMood === mood.label ? null : mood.label)}
                 className="items-center"
               >
                 <View
                   className="w-14 h-14 rounded-2xl items-center justify-center mb-1.5"
-                  style={{ backgroundColor: mood.color }}
+                  style={{
+                    backgroundColor: mood.color,
+                    borderWidth: selectedMood === mood.label ? 2 : 0,
+                    borderColor: mood.accent,
+                  }}
                 >
                   <Text className="text-2xl">{mood.emoji}</Text>
                 </View>
@@ -317,6 +331,30 @@ export default function HomeScreen() {
               </Pressable>
             ))}
           </View>
+
+          {/* Mood Suggestions */}
+          {selectedMood && (() => {
+            const moodData = [
+              { label: "Happy", accent: "#f59e0b", bg: "#fef3c7", suggestions: ["Keep doing what makes you happy!", "Share your joy with someone you love.", "Write down what made you smile today."] },
+              { label: "Neutral", accent: "#64748b", bg: "#f1f5f9", suggestions: ["Try a short walk to refresh your mind.", "Listen to your favourite music.", "Drink water and take a short break."] },
+              { label: "Angry", accent: "#ef4444", bg: "#fee2e2", suggestions: ["Take 5 deep breaths slowly.", "Step away from the situation for a few minutes.", "Write down what's bothering you."] },
+              { label: "Sad", accent: "#3b82f6", bg: "#e0f2fe", suggestions: ["It's okay to feel this way. Be gentle with yourself.", "Talk to someone you trust about how you feel.", "Try a warm drink and a calming activity."] },
+            ].find(m => m.label === selectedMood);
+            if (!moodData) return null;
+            return (
+              <View className="mt-4 p-4 rounded-xl" style={{ backgroundColor: moodData.bg }}>
+                <Text className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: moodData.accent }}>
+                  Suggestions for you
+                </Text>
+                {moodData.suggestions.map((s, i) => (
+                  <View key={i} className="flex-row items-start mb-1.5">
+                    <Text style={{ color: moodData.accent }} className="mr-2">•</Text>
+                    <Text className="text-sm text-slate-700 flex-1">{s}</Text>
+                  </View>
+                ))}
+              </View>
+            );
+          })()}
         </View>
 
         {/* ─── Thought of the Day ─── */}
@@ -443,6 +481,30 @@ export default function HomeScreen() {
           )}
         </View>
 
+        {/* Daily Insights CTA */}
+        <Pressable
+          onPress={() => router.push("/insights")}
+          className="bg-white rounded-2xl p-5 border border-slate-100 mb-8 shadow-sm flex-row items-center justify-between active:opacity-80"
+        >
+          <View className="flex-1">
+            <View className="flex-row items-center gap-2 mb-1">
+              <MaterialIcons name="auto-awesome" size={20} color="#f471b5" />
+              <Text className="text-[10px] font-bold text-pink-500 uppercase tracking-widest">
+                Daily Insights
+              </Text>
+            </View>
+            <Text className="text-slate-900 font-bold text-base mb-1">
+              Personalized Health Recommendations
+            </Text>
+            <Text className="text-slate-500 text-xs">
+              Diet, yoga, and meditation tips based on your profile.
+            </Text>
+          </View>
+          <View className="w-10 h-10 rounded-full bg-pink-50 items-center justify-center ml-4">
+            <MaterialIcons name="chevron-right" size={24} color="#ec4899" />
+          </View>
+        </Pressable>
+
         {/* Daily Tracking —  Tracker Buttons */}
         <View className="mb-8">
           <Text className="text-lg font-semibold text-slate-900 mb-4">
@@ -546,18 +608,20 @@ export default function HomeScreen() {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ gap: 16 }}
           >
-            {EDUCATIONAL_RESOURCES.map((item) => (
+            {EDUCATIONAL_RESOURCES.map((item: any) => (
               <Pressable
                 key={item.id}
-                onPress={() => item.url && Linking.openURL(item.url)}
+                onPress={() => item.url ? Linking.openURL(item.url) : (item.route && router.push(item.route))}
                 className="w-60 bg-white rounded-xl border border-slate-100 overflow-hidden active:opacity-95"
               >
                 <View className="h-32 bg-slate-100 relative">
-                  <Image
-                    source={{ uri: item.thumbnail }}
-                    className="absolute inset-0 w-full h-full"
-                    resizeMode="cover"
-                  />
+                  {item.thumbnail && (
+                    <Image
+                      source={{ uri: item.thumbnail }}
+                      className="absolute inset-0 w-full h-full"
+                      resizeMode="cover"
+                    />
+                  )}
                   <View className="absolute inset-0 items-center justify-center bg-black/20">
                     <MaterialIcons
                       name={item.type === "Video" ? "play-circle" : "article"}

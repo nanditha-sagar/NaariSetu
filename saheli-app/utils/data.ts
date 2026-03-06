@@ -57,7 +57,7 @@ export interface AssessmentData {
   sleepHours: string;
   alcohol: boolean;
   smoking: boolean;
-  primaryGoal: string;
+  primaryGoal: string[];
   cravings: string;
   moodSwings: string;
   periodAcne: string;

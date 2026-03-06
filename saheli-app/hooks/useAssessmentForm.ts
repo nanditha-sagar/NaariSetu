@@ -51,7 +51,7 @@ export const useAssessmentForm = () => {
     hemoglobin: "",
     bloodSugar: "",
     bloodPressure: "",
-    primaryGoal: "",
+    primaryGoal: [] as string[],
     cravings: "",
     moodSwings: "",
     periodAcne: "",
@@ -114,7 +114,7 @@ export const useAssessmentForm = () => {
     setFormData((prev) => ({
       ...prev,
       availableCustomGoals: [...prev.availableCustomGoals, goal],
-      primaryGoal: goal,
+      primaryGoal: [...prev.primaryGoal, goal],
     }));
   };
 
@@ -174,7 +174,7 @@ export const useAssessmentForm = () => {
     setFormData((prev) => ({
       ...prev,
       availableCustomGoals: prev.availableCustomGoals.filter((g) => g !== goal),
-      primaryGoal: prev.primaryGoal === goal ? "" : prev.primaryGoal,
+      primaryGoal: prev.primaryGoal.filter((g) => g !== goal),
     }));
   };
 
@@ -197,7 +197,8 @@ export const useAssessmentForm = () => {
       | "familyHistory"
       | "vitaminDeficiencies"
       | "availableCustomConditions"
-      | "availableCustomSymptoms",
+      | "availableCustomSymptoms"
+      | "primaryGoal",
     item: string,
   ) => {
     setFormData((prev) => {
@@ -237,11 +238,11 @@ export const useAssessmentForm = () => {
         };
 
         await saveFullAssessment(submissionData);
-        router.push("/screening/results");
+        router.push("/screening/assessment-results");
       } catch (error) {
         console.error("Submission failed:", error);
         // Fallback to results even if save fails for UX, or show alert
-        router.push("/screening/results");
+        router.push("/screening/assessment-results");
       }
     }
   };
