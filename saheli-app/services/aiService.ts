@@ -1,4 +1,6 @@
 import { InferenceClient } from "@huggingface/inference";
+import * as FileSystem from "expo-file-system/legacy";
+import { Platform } from "react-native";
 import {
   AnemiaInsights,
   BPInsights,
@@ -34,6 +36,15 @@ export interface HealthSnapshot {
   };
 }
 
+export interface FoodAnalysisResult {
+  detected_food: string;
+  estimated_calories: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+  portion_description: string;
+}
+
 const LOCAL_PROXY_URL =
   process.env.EXPO_PUBLIC_AI_BACKEND_URL || "http://192.168.1.2:8000";
 
@@ -64,6 +75,57 @@ export async function getGlobalClinicalTriage(
     return result as GlobalTriageResult;
   } catch (error) {
     console.error("Saheli AI Triage Error:", error);
+    return null;
+  }
+}
+
+/**
+ * AI Food Analyzer
+ * Uploads an image to the local Python proxy for food recognition and calorie estimation.
+ */
+export async function analyzeFood(
+  imageUri: string,
+): Promise<FoodAnalysisResult | null> {
+  try {
+    let base64Image = "";
+
+    if (Platform.OS === "web") {
+      const resp = await fetch(imageUri);
+      const blob = await resp.blob();
+      base64Image = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64 = reader.result?.toString().split(",")[1];
+          resolve(base64 || "");
+        };
+        reader.readAsDataURL(blob);
+      });
+    } else {
+      base64Image = await FileSystem.readAsStringAsync(imageUri, {
+        encoding: "base64",
+      });
+    }
+
+    const response = await fetch(`${LOCAL_PROXY_URL}/analyze-food`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        image_base64: base64Image,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Food analysis error: ${errorText}`);
+    }
+
+    const result = await response.json();
+    return result as FoodAnalysisResult;
+  } catch (error) {
+    console.error("Food Analysis Error:", error);
     return null;
   }
 }

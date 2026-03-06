@@ -1,6 +1,50 @@
 import React from "react";
-import { View, Text, Pressable, TextInput, Switch } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  TextInput,
+  Switch,
+  Platform,
+} from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
+
+export const DatePickerField = ({
+  label,
+  value,
+  onPress,
+  icon = "calendar-today",
+}: {
+  label: string;
+  value: Date;
+  onPress: () => void;
+  icon?: string;
+}) => (
+  <View className="mb-5">
+    <Text className="text-slate-700 font-semibold mb-2 ml-1 text-sm">
+      {label}
+    </Text>
+    <Pressable
+      onPress={onPress}
+      className="flex-row items-center bg-primary/5 border border-primary/20 rounded-2xl px-4 py-3 h-14"
+    >
+      <MaterialIcons
+        name={icon as any}
+        size={20}
+        color="#f4256a"
+        style={{ marginRight: 10 }}
+      />
+      <Text className="flex-1 text-slate-900 text-base font-medium">
+        {value.toLocaleDateString("en-US", {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        })}
+      </Text>
+      <MaterialIcons name="edit" size={16} color="#94a3b8" />
+    </Pressable>
+  </View>
+);
 
 export const Stepper = ({
   currentStep,
@@ -71,7 +115,7 @@ export const InputField = ({
     <Text className="text-slate-700 font-semibold mb-2 ml-1 text-sm">
       {label}
     </Text>
-    <View className="flex-row items-center bg-primary/5 border border-primary/20 rounded-2xl px-4 py-3 h-14">
+    <View className="flex-row items-center bg-primary/5 border border-primary/20 rounded-2xl px-4 h-14">
       {icon && (
         <MaterialIcons
           name={icon as any}
@@ -82,11 +126,13 @@ export const InputField = ({
       )}
       <TextInput
         placeholder={placeholder}
-        className="flex-1 text-slate-900 text-base font-medium"
+        className="flex-1 text-slate-900 text-base font-medium py-0"
         value={value}
         onChangeText={onChangeText}
         keyboardType={keyboardType}
         placeholderTextColor="#94a3b8"
+        textAlignVertical="center"
+        style={{ includeFontPadding: false }}
       />
     </View>
   </View>

@@ -43,6 +43,7 @@ import {
   ToggleCard,
   SelectGroup,
   SymptomItem,
+  DatePickerField,
 } from "../../components/assessment/AssessmentComponents";
 
 export default function AssessmentScreen() {
@@ -116,13 +117,15 @@ export default function AssessmentScreen() {
 
           {page === 1 ? (
             <View className="pb-24">
-              {/* <SectionHeader icon="person" title="Basic Information" /> */}
+              <DatePickerField
+                label="Date of Birth"
+                value={formData.dob}
+                onPress={() => setShowDOBPicker(true)}
+                icon="cake"
+              />
 
               {Platform.OS === "web" && (
-                <View className="mt-2">
-                  <Text className="text-slate-700 font-bold mb-2 ml-1 text-sm">
-                    Select DOB
-                  </Text>
+                <View className="-mt-3 mb-5">
                   <TextInput
                     // @ts-ignore
                     type="date"
@@ -137,44 +140,25 @@ export default function AssessmentScreen() {
                   />
                 </View>
               )}
-              {Platform.OS !== "web" && (
-                <Pressable
-                  onPress={() => setShowDOBPicker(true)}
-                  className="flex-row items-center bg-primary/5 border border-primary/20 rounded-2xl px-4 py-3 h-14"
-                >
-                  <MaterialIcons
-                    name="cake"
-                    size={20}
-                    color="#f4256a"
-                    style={{ marginRight: 10 }}
-                  />
-                  <Text className="text-slate-900 text-base font-medium">
-                    {formData.dob.toLocaleDateString("en-US", {
-                      month: "long",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </Text>
-                </Pressable>
-              )}
+
               {Platform.OS !== "web" && showDOBPicker && (
                 <DateTimePicker
                   value={formData.dob}
                   mode="date"
-                  display="default"
+                  display={Platform.OS === "ios" ? "spinner" : "default"}
                   maximumDate={new Date()}
                   onChange={(event, date) => {
-                    setShowDOBPicker(false);
+                    setShowDOBPicker(Platform.OS === "ios");
                     if (date) updateField("dob", date);
                   }}
                 />
               )}
 
-              <View className="mt-4 mb-5">
+              <View className="mb-5">
                 <Text className="text-slate-700 font-bold mb-2 ml-1 text-sm">
-                  Age
+                  Calculated Age
                 </Text>
-                <View className="flex-row items-center bg-primary/5 border border-primary/20 rounded-2xl px-4 py-3 h-14">
+                <View className="flex-row items-center bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 h-14">
                   <MaterialIcons
                     name="hourglass-empty"
                     size={20}
@@ -184,6 +168,11 @@ export default function AssessmentScreen() {
                   <Text className="text-slate-900 text-base font-medium">
                     {age} Years Old
                   </Text>
+                  {age < 12 && (
+                    <Text className="ml-2 text-pink-500 text-xs font-bold">
+                      (Junior)
+                    </Text>
+                  )}
                 </View>
               </View>
 
@@ -209,37 +198,41 @@ export default function AssessmentScreen() {
               <View className="flex-row gap-4 mb-2">
                 <View className="flex-1">
                   <Text className="text-slate-700 font-semibold mb-2 ml-1 text-sm">
-                    Height
+                    Height (cm)
                   </Text>
-                  <View className="flex-row items-center justify-between bg-primary/5 border border-primary/20 rounded-2xl h-14 px-4">
+                  <View className="flex-row items-center bg-primary/5 border border-primary/20 rounded-2xl h-14 px-4">
                     <MaterialIcons name="height" size={20} color="#94a3b8" />
-                    <Text className="text-slate-900 font-medium">
-                      {formData.height}
-                    </Text>
-                    <MaterialIcons
-                      name="unfold-more"
-                      size={16}
-                      color="#f4256a"
+                    <TextInput
+                      className="flex-1 text-slate-900 font-medium ml-2 py-0"
+                      value={formData.height}
+                      onChangeText={(t) => updateField("height", t)}
+                      keyboardType="numeric"
+                      placeholder="165"
+                      placeholderTextColor="#94a3b8"
+                      textAlignVertical="center"
+                      style={{ includeFontPadding: false }}
                     />
                   </View>
                 </View>
                 <View className="flex-1">
                   <Text className="text-slate-700 font-semibold mb-2 ml-1 text-sm">
-                    Weight
+                    Weight (kg)
                   </Text>
-                  <View className="flex-row items-center justify-between bg-primary/5 border border-primary/20 rounded-2xl h-14 px-4">
+                  <View className="flex-row items-center bg-primary/5 border border-primary/20 rounded-2xl h-14 px-4">
                     <MaterialIcons
                       name="fitness-center"
                       size={20}
                       color="#94a3b8"
                     />
-                    <Text className="text-slate-900 font-medium">
-                      {formData.weight}
-                    </Text>
-                    <MaterialIcons
-                      name="unfold-more"
-                      size={16}
-                      color="#f4256a"
+                    <TextInput
+                      className="flex-1 text-slate-900 font-medium ml-2 py-0"
+                      value={formData.weight}
+                      onChangeText={(t) => updateField("weight", t)}
+                      keyboardType="numeric"
+                      placeholder="60"
+                      placeholderTextColor="#94a3b8"
+                      textAlignVertical="center"
+                      style={{ includeFontPadding: false }}
                     />
                   </View>
                 </View>
@@ -599,11 +592,15 @@ export default function AssessmentScreen() {
             </View>
           ) : (
             <View className="pb-24">
+              <DatePickerField
+                label="Last Period Date"
+                value={formData.lastPeriodDate}
+                onPress={() => setShowDatePicker(true)}
+                icon="calendar-today"
+              />
+
               {Platform.OS === "web" && (
-                <View className="mt-2">
-                  <Text className="text-slate-700 font-bold mb-2 ml-1 text-sm">
-                    Select Last Period Date
-                  </Text>
+                <View className="-mt-3 mb-5">
                   <TextInput
                     // @ts-ignore
                     type="date"
@@ -618,33 +615,15 @@ export default function AssessmentScreen() {
                   />
                 </View>
               )}
-              {Platform.OS !== "web" && (
-                <Pressable
-                  onPress={() => setShowDatePicker(true)}
-                  className="flex-row items-center bg-primary/5 border border-primary/20 rounded-2xl px-4 py-3 h-14"
-                >
-                  <MaterialIcons
-                    name="calendar-today"
-                    size={20}
-                    color="#f4256a"
-                    style={{ marginRight: 10 }}
-                  />
-                  <Text className="text-slate-900 text-base font-medium">
-                    {formData.lastPeriodDate.toLocaleDateString("en-US", {
-                      month: "long",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </Text>
-                </Pressable>
-              )}
+
               {Platform.OS !== "web" && showDatePicker && (
                 <DateTimePicker
                   value={formData.lastPeriodDate}
                   mode="date"
-                  display="default"
+                  display={Platform.OS === "ios" ? "spinner" : "default"}
+                  maximumDate={new Date()}
                   onChange={(event, date) => {
-                    setShowDatePicker(false);
+                    setShowDatePicker(Platform.OS === "ios");
                     if (date) updateField("lastPeriodDate", date);
                   }}
                 />

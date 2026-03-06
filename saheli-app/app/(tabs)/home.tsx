@@ -11,6 +11,7 @@ import {
 import { MaterialIcons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import * as WebBrowser from "expo-web-browser";
 
 import RiskBadge from "@/components/RiskBadge";
 import HealthTipCard from "@/components/HealthTipCard";
@@ -57,12 +58,12 @@ const TRACKERS = [
     active: true,
   },
   {
-    id: "cravings",
-    label: "Cravings",
-    emoji: "🍫",
-    color: "#ef4444",
-    bg: "rgba(239,68,68,0.12)",
-    route: "/tracker/cravings",
+    id: "medical_report",
+    label: "Report AI",
+    emoji: "🔬",
+    color: "#2563eb",
+    bg: "rgba(37,99,235,0.12)",
+    url: "https://opal.google/app/13fXZsoVmk4-PqdqF9bhr0B8QLS31D1tt",
     active: true,
   },
   {
@@ -219,7 +220,11 @@ export default function HomeScreen() {
     }
   };
 
-  const handleTrackerPress = (tracker: (typeof TRACKERS)[0]) => {
+  const handleTrackerPress = (tracker: any) => {
+    if (tracker.url) {
+      WebBrowser.openBrowserAsync(tracker.url);
+      return;
+    }
     if (tracker.active && tracker.route) {
       router.push(tracker.route as any);
     } else {
@@ -341,7 +346,7 @@ export default function HomeScreen() {
               Start New Screening
             </Text>
             <Text className="text-white-80 text-xs">
-              AI-powered nail scan for rapid assessment
+              AI-powered scan for rapid assessment
             </Text>
           </View>
           <MaterialIcons name="arrow-forward" size={20} color="white" />
@@ -470,7 +475,13 @@ export default function HomeScreen() {
           {/* Section Header */}
           <View className="flex-row justify-between items-center mb-4">
             <Text className="text-lg font-semibold text-slate-900">Diet</Text>
-            <Pressable onPress={() => router.push("/tracker/general" as any)}>
+            <Pressable
+              onPress={() =>
+                WebBrowser.openBrowserAsync(
+                  "https://opal.google/app/13fXZsoVmk4-PqdqF9bhr0B8QLS31D1tt",
+                )
+              }
+            >
               <Text className="text-green-600 text-sm font-medium">
                 View Details
               </Text>
@@ -479,7 +490,11 @@ export default function HomeScreen() {
 
           {/* Diet Card */}
           <Pressable
-            onPress={() => router.push("/tracker/general" as any)}
+            onPress={() =>
+              WebBrowser.openBrowserAsync(
+                "https://opal.google/app/13fXZsoVmk4-PqdqF9bhr0B8QLS31D1tt",
+              )
+            }
             className="bg-[#ECFDF5] rounded-2xl p-5"
           >
             {/* Calories */}

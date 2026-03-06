@@ -11,11 +11,24 @@ export function useSignup() {
   const [country, setCountry] = useState("");
   const [state, setState] = useState("");
   const [city, setCity] = useState("");
+  const [dob, setDob] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const getAgeFromDob = (birthday: string) => {
+    if (!birthday) return "";
+    const birthDate = new Date(birthday);
+    const today = new Date();
+    let ageValue = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      ageValue--;
+    }
+    return ageValue.toString();
+  };
 
   const handleSignup = async () => {
     if (!email || !password || !name) {
@@ -40,7 +53,8 @@ export function useSignup() {
         full_name: name,
         email: email,
         phone: phone,
-        age: age ? parseInt(age) : null,
+        age: age ? parseInt(age) : dob ? parseInt(getAgeFromDob(dob)) : null,
+        dob: dob,
         country: country,
         state: state,
         city: city,
@@ -76,12 +90,15 @@ export function useSignup() {
       setState,
       city,
       setCity,
+      dob,
+      setDob,
       password,
       setPassword,
       confirmPassword,
       setConfirmPassword,
     },
     ui: {
+      getAgeFromDob,
       showPassword,
       setShowPassword,
       showConfirmPassword,

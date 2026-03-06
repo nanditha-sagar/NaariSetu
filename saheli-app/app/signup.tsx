@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialIcons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSignup } from "@/hooks/useSignup";
@@ -17,6 +18,19 @@ import Colors from "@/constants/Colors";
 
 export default function SignupScreen() {
   const { form, ui, handleSignup } = useSignup();
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  const onDateChange = (event: any, selectedDate?: Date) => {
+    setShowDatePicker(Platform.OS === "ios");
+    if (selectedDate) {
+      const dateString = selectedDate.toISOString().split("T")[0];
+      form.setDob(dateString);
+      // Auto-set age if not already entered manually
+      if (!form.age) {
+        form.setAge(ui.getAgeFromDob(dateString));
+      }
+    }
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -92,7 +106,7 @@ export default function SignupScreen() {
               <View className="flex-row items-center bg-slate-50 border border-slate-200 rounded-xl px-4 h-14 focus:border-pink-500 focus:bg-pink-50/10">
                 <MaterialIcons name="phone" size={20} color="#94a3b8" />
                 <TextInput
-                  className="flex-1 ml-3 text-slate-900 text-base"
+                  className="flex-row items-center flex-1 ml-3 text-slate-900 text-base"
                   placeholder="+91 98765 43210"
                   placeholderTextColor="#cbd5e1"
                   keyboardType="phone-pad"
@@ -102,27 +116,41 @@ export default function SignupScreen() {
               </View>
             </View>
 
-            {/* Age and Country Row */}
+            {/* DOB and Country Row */}
             <View className="flex-row gap-4">
               <View className="flex-1">
                 <Text className="text-slate-700 font-semibold mb-2 ml-1">
-                  Age
+                  Date of Birth
                 </Text>
-                <View className="flex-row items-center bg-slate-50 border border-slate-200 rounded-xl px-4 h-14 focus:border-pink-500 focus:bg-pink-50/10">
+                <Pressable
+                  onPress={() => setShowDatePicker(true)}
+                  className="flex-row items-center bg-slate-50 border border-slate-200 rounded-xl px-4 h-14 focus:border-pink-500 focus:bg-pink-50/10"
+                >
                   <MaterialIcons name="cake" size={20} color="#94a3b8" />
-                  <TextInput
-                    className="flex-1 ml-3 text-slate-900 text-base"
-                    placeholder="25"
-                    placeholderTextColor="#cbd5e1"
-                    keyboardType="number-pad"
-                    maxLength={3}
-                    value={form.age}
-                    onChangeText={form.setAge}
+                  <Text
+                    className="flex-1 ml-3 text-base"
+                    style={{ color: form.dob ? "#0f172a" : "#cbd5e1" }}
+                  >
+                    {form.dob || "YYYY-MM-DD"}
+                  </Text>
+                </Pressable>
+
+                {Platform.OS !== "web" && showDatePicker && (
+                  <DateTimePicker
+                    value={
+                      form.dob && !isNaN(new Date(form.dob).getTime())
+                        ? new Date(form.dob)
+                        : new Date(2000, 0, 1)
+                    }
+                    mode="date"
+                    display={Platform.OS === "ios" ? "spinner" : "default"}
+                    onChange={onDateChange}
+                    maximumDate={new Date()}
                   />
-                </View>
+                )}
               </View>
 
-              <View className="flex-[1.5]">
+              <View className="flex-1">
                 <Text className="text-slate-700 font-semibold mb-2 ml-1">
                   Country
                 </Text>
@@ -139,6 +167,13 @@ export default function SignupScreen() {
                 </View>
               </View>
             </View>
+
+            {/* Hidden/Helper text for age if DOB is selected */}
+            {form.dob && (
+              <Text className="text-pink-600 text-xs ml-1 -mt-3">
+                Calculated Age: {ui.getAgeFromDob(form.dob)} years
+              </Text>
+            )}
 
             {/* State and City Row */}
             <View className="flex-row gap-4">
@@ -251,7 +286,8 @@ export default function SignupScreen() {
                 colors={[Colors.light.secondary, Colors.light.accent]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
-                className="h-14 rounded-xl items-center justify-center flex-row space-x-2"
+                className="h-14 rounded-xl items-center justify-center flex-row"
+                style={{ gap: 8 }}
               >
                 {ui.isLoading ? (
                   <Text className="text-white font-bold text-lg">
@@ -259,7 +295,7 @@ export default function SignupScreen() {
                   </Text>
                 ) : (
                   <>
-                    <Text className="text-white font-bold text-lg mr-2">
+                    <Text className="text-white font-bold text-lg">
                       Sign Up
                     </Text>
                     <MaterialIcons
