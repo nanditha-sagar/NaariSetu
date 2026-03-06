@@ -99,6 +99,35 @@ export async function saveFullAssessment(data: AssessmentData): Promise<void> {
   }
 }
 
+export async function getLatestAssessment(): Promise<AssessmentData | null> {
+  try {
+    const user = auth.currentUser;
+    if (!user) return null;
+
+    const assessmentsQuery = query(
+      collection(db, "assessments"),
+      where("user_id", "==", user.uid),
+    );
+    const querySnapshot = await getDocs(assessmentsQuery);
+
+    if (querySnapshot.empty) return null;
+
+    // Sort manually to avoid index requirement
+    const docs = querySnapshot.docs.sort((a, b) => {
+      const tsA = a.data().timestamp || "";
+      const tsB = b.data().timestamp || "";
+      return tsB.localeCompare(tsA);
+    });
+
+    const row = docs[0].data();
+    return row.data as AssessmentData;
+  } catch (e) {
+    console.error("Failed to load latest assessment from Firestore:", e);
+    return null;
+  }
+}
+
+
 export async function getScreenings(): Promise<ScreeningEntry[]> {
   try {
     const user = auth.currentUser;
@@ -297,11 +326,11 @@ export interface GlucoseReading {
   userId: string;
   value: number;
   timing:
-    | "fasting"
-    | "before_meal"
-    | "after_meal_1h"
-    | "after_meal_2h"
-    | "random";
+  | "fasting"
+  | "before_meal"
+  | "after_meal_1h"
+  | "after_meal_2h"
+  | "random";
   source: "glucometer" | "lab" | "cgm";
   symptoms: string[];
   insulinMedication: boolean;

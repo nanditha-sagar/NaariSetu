@@ -168,7 +168,7 @@ export interface MoodLogEntry {
   sleep: "normal" | "insomnia" | "hypersomnia";
   appetite: "normal" | "comfort" | "none";
   focus: "normal" | "brain_fog" | "racing";
-  safetyCheck: "no" | "passive" | "active";
+  safetyCheck: string;
   isPostpartum?: boolean;
   isPerimenopause?: boolean;
   timestamp: string;
@@ -800,7 +800,15 @@ export function generateMoodInsights(
     stressPattern,
   };
 
-  if (entry.safetyCheck !== "no") {
+  const lowercaseSafety = entry.safetyCheck.toLowerCase();
+  const isHighRisk =
+    lowercaseSafety.includes("hurt") ||
+    lowercaseSafety.includes("kill") ||
+    lowercaseSafety.includes("suicide") ||
+    lowercaseSafety.includes("die") ||
+    lowercaseSafety.includes("end my life");
+
+  if (isHighRisk) {
     return {
       triageZone: "Red",
       triageMessage: "CRITICAL: Please stay with us. You are important.",

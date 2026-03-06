@@ -43,6 +43,7 @@ import {
   ToggleCard,
   SelectGroup,
   SymptomItem,
+  SliderField,
 } from "../../components/assessment/AssessmentComponents";
 
 export default function AssessmentScreen() {
@@ -119,43 +120,74 @@ export default function AssessmentScreen() {
               {/* <SectionHeader icon="person" title="Basic Information" /> */}
 
               {Platform.OS === "web" && (
+                <View className="mt-2 text-slate-900 border-red-500">
+                  <Text className="text-slate-700 font-bold mb-2 ml-1 text-sm">
+                    Select DOB
+                  </Text>
+                  <View className="relative">
+                    <Pressable
+                      onPress={() => {
+                        const inputElement = document.getElementById("web-date-input");
+                        if (inputElement && typeof (inputElement as any).showPicker === "function") {
+                          (inputElement as any).showPicker();
+                        }
+                      }}
+                      style={{
+                        position: "absolute",
+                        left: 16,
+                        top: 17,
+                        zIndex: 2,
+                      }}
+                    >
+                      <MaterialIcons
+                        name="calendar-today"
+                        size={20}
+                        color="#f4256a"
+                      />
+                    </Pressable>
+                    <TextInput
+                      // @ts-ignore
+                      type="date"
+                      id="web-date-input"
+                      className="flex-row items-center bg-primary/5 border border-primary/20 rounded-2xl pl-12 pr-4 py-3 h-14 text-slate-900 text-base font-medium"
+                      value={formData.dob.toISOString().split("T")[0]}
+                      max={new Date().toISOString().split("T")[0]}
+                      min="1920-01-01"
+                      onChange={(e: any) => {
+                        const date = new Date(e.target.value);
+                        if (!isNaN(date.getTime())) {
+                          updateField("dob", date);
+                        }
+                      }}
+                    />
+                  </View>
+                </View>
+              )}
+              {Platform.OS !== "web" && (
                 <View className="mt-2">
                   <Text className="text-slate-700 font-bold mb-2 ml-1 text-sm">
                     Select DOB
                   </Text>
-                  <TextInput
-                    // @ts-ignore
-                    type="date"
-                    className="flex-row items-center bg-primary/5 border border-primary/20 rounded-2xl px-4 py-3 h-14 text-slate-900 text-base font-medium"
-                    value={formData.dob.toISOString().split("T")[0]}
-                    onChange={(e: any) => {
-                      const date = new Date(e.target.value);
-                      if (!isNaN(date.getTime())) {
-                        updateField("dob", date);
-                      }
-                    }}
-                  />
+                  <Pressable
+                    onPress={() => setShowDOBPicker(true)}
+                    className="flex-row items-center bg-primary/5 border border-primary/20 rounded-2xl px-4 py-3 h-14"
+                  >
+                    <MaterialIcons
+                      name="calendar-today"
+                      size={20}
+                      color="#f4256a"
+                      style={{ marginRight: 10 }}
+                    />
+                    <Text className="flex-1 text-slate-900 text-base font-medium">
+                      {formData.dob.toISOString().split("T")[0]}
+                    </Text>
+                    <MaterialIcons
+                      name="arrow-drop-down"
+                      size={24}
+                      color="#94a3b8"
+                    />
+                  </Pressable>
                 </View>
-              )}
-              {Platform.OS !== "web" && (
-                <Pressable
-                  onPress={() => setShowDOBPicker(true)}
-                  className="flex-row items-center bg-primary/5 border border-primary/20 rounded-2xl px-4 py-3 h-14"
-                >
-                  <MaterialIcons
-                    name="cake"
-                    size={20}
-                    color="#f4256a"
-                    style={{ marginRight: 10 }}
-                  />
-                  <Text className="text-slate-900 text-base font-medium">
-                    {formData.dob.toLocaleDateString("en-US", {
-                      month: "long",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </Text>
-                </Pressable>
               )}
               {Platform.OS !== "web" && showDOBPicker && (
                 <DateTimePicker
@@ -163,6 +195,7 @@ export default function AssessmentScreen() {
                   mode="date"
                   display="default"
                   maximumDate={new Date()}
+                  minimumDate={new Date(1920, 0, 1)}
                   onChange={(event, date) => {
                     setShowDOBPicker(false);
                     if (date) updateField("dob", date);
@@ -436,78 +469,65 @@ export default function AssessmentScreen() {
                 </Pressable>
               </View>
 
-              <SectionHeader
-                icon="info"
-                title="Current Symptoms"
-                subtitle="Based on your selected conditions."
-              />
-              <View>
-                {visibleSymptoms.map((s) => {
-                  const isCustom = s.id.startsWith("custom_");
-                  return (
-                    <SymptomItem
-                      key={s.id}
-                      label={s.label}
-                      isSelected={formData.currentSymptoms.includes(s.label)}
-                      onToggle={() => toggleItem("currentSymptoms", s.label)}
-                      onDelete={
-                        isCustom
-                          ? () => removeCustomSymptom(s.label)
-                          : undefined
-                      }
-                    />
-                  );
-                })}
-              </View>
-
-              <View className="flex-row gap-2 mb-6">
-                <View className="flex-1">
-                  <InputField
-                    label="Other Symptom"
-                    placeholder="e.g. Dry skin"
-                    value={customSymptomText}
-                    onChangeText={setCustomSymptomText}
+              {formData.medicalConditions.includes("None") && (
+                <>
+                  <SectionHeader
+                    icon="info"
+                    title="Current Symptoms"
+                    subtitle="Based on your selected conditions."
                   />
-                </View>
-                <Pressable
-                  onPress={() => {
-                    addCustomSymptom(customSymptomText);
-                    setCustomSymptomText("");
-                  }}
-                  className="mt-7 h-14 px-5 bg-primary/10 border border-primary/20 rounded-2xl items-center justify-center"
-                >
-                  <MaterialIcons name="add" size={24} color="#f4256a" />
-                </Pressable>
-              </View>
+                  <View>
+                    {visibleSymptoms.map((s) => {
+                      const isCustom = s.id.startsWith("custom_");
+                      return (
+                        <SymptomItem
+                          key={s.id}
+                          label={s.label}
+                          isSelected={formData.currentSymptoms.includes(
+                            s.label,
+                          )}
+                          onToggle={() =>
+                            toggleItem("currentSymptoms", s.label)
+                          }
+                          onDelete={
+                            isCustom
+                              ? () => removeCustomSymptom(s.label)
+                              : undefined
+                          }
+                        />
+                      );
+                    })}
+                  </View>
+
+                  <View className="flex-row gap-2 mb-6">
+                    <View className="flex-1">
+                      <InputField
+                        label="Other Symptom"
+                        placeholder="e.g. Dry skin"
+                        value={customSymptomText}
+                        onChangeText={setCustomSymptomText}
+                      />
+                    </View>
+                    <Pressable
+                      onPress={() => {
+                        addCustomSymptom(customSymptomText);
+                        setCustomSymptomText("");
+                      }}
+                      className="mt-7 h-14 px-5 bg-primary/10 border border-primary/20 rounded-2xl items-center justify-center"
+                    >
+                      <MaterialIcons name="add" size={24} color="#f4256a" />
+                    </Pressable>
+                  </View>
+                </>
+              )}
 
               <SectionHeader icon="lifestyle" title="Lifestyle & Well-being" />
-              <View className="mb-6">
-                <View className="flex-row justify-between items-center mb-2">
-                  <Text className="text-slate-800 font-bold text-sm">
-                    Stress Levels
-                  </Text>
-                  <View className="bg-primary/10 px-3 py-1 rounded-full">
-                    <Text className="text-primary text-xs font-bold">
-                      Moderate
-                    </Text>
-                  </View>
-                </View>
-                <View className="h-1.5 bg-primary/20 rounded-full">
-                  <View
-                    className="h-full bg-primary rounded-full transition-all"
-                    style={{ width: "45%" }}
-                  />
-                  <View className="absolute top-[-5px] left-[45%] size-4 bg-primary border-2 border-white rounded-full shadow-sm" />
-                </View>
-                <View className="flex-row justify-between mt-2">
-                  <Text className="text-slate-400 text-[10px] font-bold uppercase tracking-tighter">
-                    Low
-                  </Text>
-                  <Text className="text-slate-400 text-[10px] font-bold uppercase tracking-tighter">
-                    High
-                  </Text>
-                </View>
-              </View>
+
+              <SliderField
+                label="Stress Levels"
+                value={formData.stressLevel}
+                onValueChange={(val) => updateField("stressLevel", val)}
+              />
 
               <SelectGroup
                 label="Daily Sleep Hours"
@@ -587,15 +607,6 @@ export default function AssessmentScreen() {
                   <MaterialIcons name="add" size={24} color="#f4256a" />
                 </Pressable>
               </View>
-
-              <SectionHeader icon="family_history" title="Family History" />
-              <SelectGroup
-                label=""
-                options={FAMILY_HISTORY_OPTIONS}
-                selected={formData.familyHistory}
-                multiSelect
-                onSelect={(v) => toggleItem("familyHistory", v)}
-              />
             </View>
           ) : (
             <View className="pb-24">
@@ -729,7 +740,8 @@ export default function AssessmentScreen() {
                   ...formData.availableCustomGoals,
                 ]}
                 selected={formData.primaryGoal}
-                onSelect={(val) => updateField("primaryGoal", val)}
+                multiSelect
+                onSelect={(val) => toggleItem("primaryGoal", val)}
               />
 
               {formData.availableCustomGoals.length > 0 && (

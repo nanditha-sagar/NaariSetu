@@ -12,12 +12,7 @@ export const BLOOD_GROUP_OPTIONS = [
   "O-",
 ];
 export const MARITAL_STATUS_OPTIONS = ["Single", "Married", "In Relationship"];
-export const OCCUPATION_OPTIONS = [
-  "Student",
-  "Professional",
-  "Homemaker",
-  "Self-employed",
-];
+export const OCCUPATION_OPTIONS = ["Student", "Teacher", "Doctor", "Engineer"];
 export const MEDICAL_CONDITIONS = [
   "Diabetes",
   "Thyroid (Hypo)",

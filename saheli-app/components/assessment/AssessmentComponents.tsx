@@ -154,16 +154,14 @@ export const SelectGroup = ({
           <Pressable
             key={option}
             onPress={() => onSelect(option)}
-            className={`px-4 py-2.5 rounded-xl border ${
-              isSelected
+            className={`px-4 py-2.5 rounded-xl border ${isSelected
                 ? "bg-primary border-primary"
                 : "bg-white border-slate-200"
-            } ${grid ? "flex-1 min-w-[22%]" : ""}`}
+              } ${grid ? "flex-1 min-w-[22%]" : ""}`}
           >
             <Text
-              className={`font-semibold text-sm text-center ${
-                isSelected ? "text-white" : "text-slate-500"
-              }`}
+              className={`font-semibold text-sm text-center ${isSelected ? "text-white" : "text-slate-500"
+                }`}
             >
               {option}
             </Text>
@@ -187,21 +185,18 @@ export const SymptomItem = ({
 }) => (
   <Pressable
     onPress={onToggle}
-    className={`flex-row items-center p-4 rounded-xl border mb-3 ${
-      isSelected ? "bg-primary/10 border-primary" : "bg-white border-primary/10"
-    }`}
+    className={`flex-row items-center p-4 rounded-xl border mb-3 ${isSelected ? "bg-primary/10 border-primary" : "bg-white border-primary/10"
+      }`}
   >
     <View
-      className={`size-6 rounded border items-center justify-center ${
-        isSelected ? "bg-primary border-primary" : "bg-white border-primary/30"
-      }`}
+      className={`size-6 rounded border items-center justify-center ${isSelected ? "bg-primary border-primary" : "bg-white border-primary/30"
+        }`}
     >
       {isSelected && <MaterialIcons name="check" size={16} color="white" />}
     </View>
     <Text
-      className={`ml-4 flex-1 text-sm font-medium ${
-        isSelected ? "text-slate-900" : "text-slate-700"
-      }`}
+      className={`ml-4 flex-1 text-sm font-medium ${isSelected ? "text-slate-900" : "text-slate-700"
+        }`}
     >
       {label}
     </Text>
@@ -212,3 +207,73 @@ export const SymptomItem = ({
     )}
   </Pressable>
 );
+export const SliderField = ({
+  label,
+  value,
+  onValueChange,
+  minLabel = "Low",
+  maxLabel = "High",
+}: {
+  label: string;
+  value: number;
+  onValueChange: (val: number) => void;
+  minLabel?: string;
+  maxLabel?: string;
+}) => {
+  const [width, setWidth] = React.useState(0);
+
+  const handleTouch = (event: any) => {
+    if (width === 0) return;
+    const x = event.nativeEvent.locationX;
+    const percentage = Math.max(0, Math.min(100, (x / width) * 100));
+    onValueChange(Math.round(percentage));
+  };
+
+  const getStatusText = (val: number) => {
+    if (val < 30) return "Low";
+    if (val < 70) return "Moderate";
+    return "High";
+  };
+
+  return (
+    <View className="mb-6">
+      <View className="flex-row justify-between items-center mb-3">
+        <Text className="text-slate-800 font-bold text-sm">{label}</Text>
+        <View className="bg-primary/10 px-3 py-1 rounded-full">
+          <Text className="text-primary text-xs font-bold">
+            {getStatusText(value)} ({value}%)
+          </Text>
+        </View>
+      </View>
+
+      <View
+        onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
+        onStartShouldSetResponder={() => true}
+        onMoveShouldSetResponder={() => true}
+        onResponderGrant={handleTouch}
+        onResponderMove={handleTouch}
+        className="h-10 justify-center"
+      >
+        <View className="h-1.5 bg-primary/20 rounded-full w-full">
+          <View
+            className="h-full bg-primary rounded-full"
+            style={{ width: `${value}%` }}
+          />
+          <View
+            className="absolute top-[-7px] size-5 bg-white border-4 border-primary rounded-full shadow-sm"
+            style={{ left: `${Math.max(0, Math.min(95, value - 2))}%` }}
+          />
+        </View>
+      </View>
+
+      <View className="flex-row justify-between mt-1">
+        <Text className="text-slate-400 text-[10px] font-bold uppercase tracking-tighter">
+          {minLabel}
+        </Text>
+        <Text className="text-slate-400 text-[10px] font-bold uppercase tracking-tighter">
+          {maxLabel}
+        </Text>
+      </View>
+    </View>
+  );
+};
